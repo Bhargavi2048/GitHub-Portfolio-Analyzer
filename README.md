@@ -21,6 +21,8 @@
 
 Demo Link: "https://github-portfolio-analyzer-r0zy.onrender.com"
 
+Demo Video: "https://drive.google.com/file/d/1frml3WLVe1WiHHuSsz2T3GWAQQqa2ioo/view?usp=sharing"
+
 </div>
 
 ---
