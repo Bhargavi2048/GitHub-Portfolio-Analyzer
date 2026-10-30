@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GitHub Portfolio Analyzer — Modern Tabbed Dashboard Reference</title>
+  <style>
+    :root {
+      --primary: #0d7377;
+      --primary-dark: #051d2a;
+      --accent: #14919b;
+      --accent-light: #76c7d1;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.07);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+
+    .container {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    /* ─── Top Brand Header ─── */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 24px;
+    }
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-export {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .btn-export:hover { background: var(--primary-dark); }
+
+    /* ─── Hero Score & Profile Section (Sticky Anchor) ─── */
+    .hero-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 24px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 850px) {
+      .hero-card { grid-template-columns: 1fr; text-align: center; }
+      .score-summary-pills { justify-content: center; }
+    }
+
+    .avatar-wrapper { position: relative; }
+    .avatar-img {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      object-fit: cover;
+    }
+
+    .profile-info h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .profile-meta {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 4px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .score-summary-pills {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .score-badge {
+      background: linear-gradient(135deg, #f0fdfa 0%, #e6fffa 100%);
+      border: 2px solid var(--primary);
+      padding: 12px 20px;
+      border-radius: 14px;
+      text-align: center;
+      min-width: 105px;
+    }
+    .score-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .score-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--primary-dark);
+      margin-top: 4px;
+    }
+
+    /* ─── 4-Tab Navigation Bar ─── */
+    .tabs-navbar {
+      display: flex;
+      gap: 10px;
+      background: #ffffff;
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+      position: sticky;
+      top: 14px;
+      z-index: 100;
+      overflow-x: auto;
+    }
+    .tab-item {
+      flex: 1;
+      min-width: 160px;
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .tab-item:hover {
+      background: #f1f5f9;
+      color: var(--text);
+    }
+    .tab-item.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(13, 115, 119, 0.25);
+    }
+
+    /* ─── Tab Content Containers ─── */
+    .tab-content {
+      display: none;
+      animation: tabFadeIn 0.25s ease-out;
+    }
+    .tab-content.active { display: block; }
+
+    @keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 20px;
+    }
+    .panel-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ─── Grid Helpers ─── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    /* ─── Pillar Progress Item ─── */
+    .pillar-row {
+      margin-bottom: 14px;
+    }
+    .pillar-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .progress-track {
+      background: #e2e8f0;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--primary) 100%);
+      border-radius: 4px;
+    }
+
+    /* ─── Repo Cards ─── */
+    .repo-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .repo-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--accent);
+    }
+    .repo-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .repo-card-header a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .tag-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+    .tag-success { background: #dcfce7; color: #166534; }
+    .tag-warning { background: #fef3c7; color: #92400e; }
+
+    /* ─── Quick Fixes Box ─── */
+    .quick-fix-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+    .quick-fix-item {
+      display: flex;
+      gap: 10px;
+      font-size: 0.92rem;
+      margin-bottom: 8px;
+      color: #78350f;
+    }
+    .quick-fix-item:last-child { margin-bottom: 0; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Top Brand & Export Dropdown -->
+    <header class="top-nav">
+      <div class="brand-title">🚀 GitHub Portfolio Analyzer</div>
+      <button class="btn-export" onclick="alert('Export Options: PDF, JSON, Markdown, HTML Snapshot')">
+        📥 Export Report ▾
+      </button>
+    </header>
+
+    <!-- 1. Hero Score Header (Persistent) -->
+    <section class="hero-card">
+      <div class="avatar-wrapper">
+        <img class="avatar-img" src="https://avatars.githubusercontent.com/u/246520364?v=4" alt="Bhargavi N" />
+      </div>
+
+      <div class="profile-info">
+        <h1>Bhargavi N <span style="font-size: 0.9rem; font-weight: 400; color: var(--text-muted);">(she/her)</span></h1>
+        <div class="profile-meta">
+          <span>@bhargavi2048-boop</span>
+          <span>📍 Chennai, India</span>
+          <span>🏢 Easwari Engineering College</span>
+        </div>
+        <p style="margin-top: 8px; font-size: 0.92rem; color: var(--text);">
+          CS student · Building responsive web apps with HTML, CSS &amp; JS · Exploring AI &amp; intelligent systems
+        </p>
+      </div>
+
+      <div class="score-summary-pills">
+        <div class="score-badge">
+          <div class="score-value">45<span style="font-size: 1rem; font-weight: 600;">/100</span></div>
+          <div class="score-label">Rank C</div>
+        </div>
+        <div class="score-badge" style="border-color: #f59e0b; background: #fffbeb;">
+          <div class="score-value" style="color: #d97706;">66%</div>
+          <div class="score-label" style="color: #b45309;">ATS Score</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Sticky Tabbed Navigation Bar -->
+    <nav class="tabs-navbar" role="tablist">
+      <button class="tab-item active" onclick="switchTab('overview')">
+        📊 Overview &amp; 5 Pillars
+      </button>
+      <button class="tab-item" onclick="switchTab('repos')">
+        📚 Top Repositories (12)
+      </button>
+      <button class="tab-item" onclick="switchTab('strength')">
+        🛡️ Portfolio Strength &amp; Heatmap
+      </button>
+      <button class="tab-item" onclick="switchTab('ai')">
+        🤖 AI Enterprise Audit
+      </button>
+      <button class="tab-item" onclick="switchTab('resume')">
+        📄 ATS &amp; Resume Match
+      </button>
+    </nav>
+
+    <!-- 3. TAB 1: OVERVIEW -->
+    <section id="tab-overview" class="tab-content active">
+      <div class="grid-2">
+        <div class="panel-card">
+          <h3>📈 5-Pillar Score Breakdown</h3>
+          <div class="pillar-row">
+            <div class="pillar-meta"><span>Documentation</span><span>100%</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width: 100%;"></div></div>
+          </div>
+          <div class="pillar-row">
+            <div class="pillar-meta"><span>Activity</span><span>70%</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width: 70%;"></div></div>
+          </div>
+          <div class="pillar-row">
+            <div class="pillar-meta"><span>Language Diversity</span><span>48%</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width: 48%;"></div></div>
+          </div>
+          <div class="pillar-row">
+            <div class="pillar-meta"><span>Community Impact</span><span>21%</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width: 21%;"></div></div>
+          </div>
+          <div class="pillar-row">
+            <div class="pillar-meta"><span>Repository Quality (License/Topics)</span><span>0%</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width: 0%; background: var(--danger);"></div></div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <h3>🎯 High-Impact Action Items</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Fixing these 3 items will raise your portfolio score into Rank B (65+):</p>
+          <div class="quick-fix-box">
+            <div class="quick-fix-item">
+              <span>⚠️</span>
+              <div><strong>Add LICENSE files:</strong> 0 of 12 repos have an open-source license. Adding MIT increases Quality by 50%.</div>
+            </div>
+            <div class="quick-fix-item">
+              <span>🏷️</span>
+              <div><strong>Add GitHub Topics:</strong> Tag repos with keywords like <code>#javascript</code>, <code>#ai</code> to improve discoverability.</div>
+            </div>
+            <div class="quick-fix-item">
+              <span>📌</span>
+              <div><strong>Pin Top 3 Repos:</strong> Highlight your flagship projects with demo GIFs on your main GitHub profile.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. TAB 2: REPOSITORIES -->
+    <section id="tab-repos" class="tab-content">
+      <div class="panel-card">
+        <h3>📚 Repository Quality Inspector</h3>
+        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.92rem;">
+          Evaluating your public non-fork repositories for recruiter readability and documentation:
+        </p>
+
+        <div class="grid-3">
+          <div class="repo-card">
+            <div class="repo-card-header">
+              <a href="#">Digital-krishi-officer</a>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">HTML/JS</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 6px 0;">Agriculture advisory assistance web app.</p>
+            <span class="tag-badge tag-success">✅ Has README</span>
+            <span class="tag-badge tag-warning">⚠️ No License</span>
+          </div>
+
+          <div class="repo-card">
+            <div class="repo-card-header">
+              <a href="#">Gen-Z-Personal-Finance</a>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">TypeScript</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 6px 0;">Modern interactive personal budgeting tool.</p>
+            <span class="tag-badge tag-success">✅ Has README</span>
+            <span class="tag-badge tag-warning">⚠️ No License</span>
+          </div>
+
+          <div class="repo-card">
+            <div class="repo-card-header">
+              <a href="#">AI-Crop-Disease-Detector</a>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Python</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 6px 0;">Computer vision pipeline for leaf classification.</p>
+            <span class="tag-badge tag-success">✅ Has README</span>
+            <span class="tag-badge tag-warning">⚠️ No License</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. TAB 3: PORTFOLIO STRENGTH & HEATMAP -->
+    <section id="tab-strength" class="tab-content">
+      <div class="panel-card">
+        <h3>🗓️ 12-Month Activity Rhythm</h3>
+        <p style="color: var(--text-muted); font-size: 0.92rem;">
+          Shows commit volume and consistency across your active repositories over the past year.
+        </p>
+        <div style="height: 160px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); margin-top: 14px;">
+          [Chart.js / Heatmap Canvas Renders Here]
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <h3>🎮 Developer Rank &amp; XP Progression</h3>
+        <p>Current Title: <strong>Junior Developer</strong> · 1,450 XP (Next Level: Mid-Level Developer at 2,000 XP)</p>
+      </div>
+    </section>
+
+    <!-- 6. TAB 4: AI ENTERPRISE PANELS -->
+    <section id="tab-ai" class="tab-content">
+      <div class="panel-card">
+        <h3>🤖 Senior Recruiter First Impression</h3>
+        <blockquote style="border-left: 4px solid var(--primary); padding-left: 16px; font-style: italic; color: #334155;">
+          "The candidate shows genuine passion and breadth across web development and AI. Their documentation practices are strong (100% of analyzed top repos have a README). To immediately unlock interview invitations, add open-source licenses, tag tech stacks with topics, and host 2 live demo links."
+        </blockquote>
+      </div>
+
+      <div class="panel-card">
+        <h3>🏢 9 Enterprise Diagnostics</h3>
+        <p style="color: var(--text-muted); margin-bottom: 14px;">The deep analysis panels (Quality Judge, Architecture Detection, Open Source Readiness) live here cleanly without cluttering the overview.</p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button style="padding: 8px 12px; background: #f1f5f9; border: 1px solid var(--border); border-radius: 6px; cursor: pointer;">🔍 Architecture Detection</button>
+          <button style="padding: 8px 12px; background: #f1f5f9; border: 1px solid var(--border); border-radius: 6px; cursor: pointer;">⚖️ Project Quality Judge</button>
+          <button style="padding: 8px 12px; background: #f1f5f9; border: 1px solid var(--border); border-radius: 6px; cursor: pointer;">🌱 Open Source Readiness</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. TAB 5: ATS & RESUME MATCH -->
+    <section id="tab-resume" class="tab-content">
+      <div class="panel-card">
+        <h3>📄 ATS Resume Scanner</h3>
+        <p style="color: var(--text-muted); margin-bottom: 16px;">
+          Upload your resume in PDF format (up to 5MB) to benchmark detected skills against your GitHub commits.
+        </p>
+        <div style="border: 2px dashed var(--accent); padding: 40px; text-align: center; border-radius: 12px; background: #f0fdfa;">
+          <p style="font-weight: 600; color: var(--primary);">Drag and drop your PDF resume here, or browse</p>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Scanned across 80+ industry tech keywords</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Tab Controller Script -->
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+
+      const targetContent = document.getElementById('tab-' + tabId);
+      if (targetContent) targetContent.classList.add('active');
+
+      const clickedBtn = Array.from(document.querySelectorAll('.tab-item')).find(b =>
+        b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabId)
+      );
+      if (clickedBtn) clickedBtn.classList.add('active');
+
+      if (history.replaceState) {
+        history.replaceState(null, null, '#' + tabId);
+      }
+    }
+
+    // Load initial tab from URL hash if available
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && document.getElementById('tab-' + hash)) {
+        switchTab(hash);
+      }
+    });
+  </script>
+</body>
+</html>

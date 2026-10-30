@@ -1643,6 +1643,61 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
 }
 #addCmpBtn:hover { background: var(--primary-teal); color: white; }
 
+
+/* ─── Modern Results Tab Navigation ─── */
+.analysis-tabs-nav {
+    display: flex;
+    gap: 8px;
+    background: var(--bg-card, #ffffff);
+    padding: 8px;
+    border-radius: 14px;
+    border: 2px solid var(--accent-teal, #76c7d1);
+    box-shadow: 0 4px 16px rgba(13, 115, 119, 0.12);
+    margin: 28px 0 20px;
+    position: sticky;
+    top: 15px;
+    z-index: 100;
+    overflow-x: auto;
+}
+.tab-btn {
+    flex: 1;
+    min-width: 140px;
+    padding: 12px 14px;
+    background: var(--bg-light, #f5f9fa);
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 8px;
+    color: var(--primary-teal, #0d7377);
+    font-size: 0.92em;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+}
+.tab-btn:hover {
+    background: rgba(118, 199, 209, 0.2);
+    border-color: var(--primary-teal, #0d7377);
+}
+.tab-btn.active {
+    background: linear-gradient(135deg, var(--primary-teal, #0d7377) 0%, var(--dark-teal, #051d2a) 100%);
+    color: #ffffff;
+    border-color: var(--primary-teal, #0d7377);
+    box-shadow: 0 4px 10px rgba(13, 115, 119, 0.25);
+}
+.tab-pane {
+    display: none;
+    animation: fadeInTab 0.3s ease-out;
+}
+.tab-pane.active {
+    display: block;
+}
+@keyframes fadeInTab {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
@@ -1704,6 +1759,7 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
             </div>
 
             <section id="resultsSection" class="results-section hidden">
+
                 <div class="score-card">
                     <div class="score-container">
                         <div class="score-circle">
@@ -1746,7 +1802,19 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
                     </div>
                 </div>
 
-                <div class="details-section">
+                
+
+                <nav class="analysis-tabs-nav" role="tablist">
+                    <button class="tab-btn active" onclick="switchAnalysisTab('overview')">📊 Overview &amp; Scores</button>
+                    <button class="tab-btn" onclick="switchAnalysisTab('repos')">📚 Repositories</button>
+                    <button class="tab-btn" onclick="switchAnalysisTab('strength')">🛡️ Portfolio Strength</button>
+                    <button class="tab-btn" onclick="switchAnalysisTab('ai')">🤖 AI Enterprise Audit</button>
+                    <button class="tab-btn" onclick="switchAnalysisTab('resume')">📄 ATS &amp; Resume Match</button>
+                </nav>
+
+
+                <div id="tab-overview" class="tab-pane active">
+                    <div class="details-section">
                     <h3>📋 Account Details & Information</h3>
                     <div class="details-grid">
                         <div class="detail-item">
@@ -1783,8 +1851,7 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
                         </div>
                     </div>
                 </div>
-
-                <div class="scoring-breakdown">
+                    <div class="scoring-breakdown">
                     <h3>📈 Portfolio Scoring Breakdown</h3>
                     <p style="color: #666; margin-bottom: 25px; font-size: 0.95em;">Based on 6 key metrics evaluated by recruiters:</p>
                     <div class="metrics-grid">
@@ -1849,29 +1916,64 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
                         </div>
                     </div>
                 </div>
-
-                <div class="feedback-card strengths">
+                    <div class="feedback-card strengths">
                     <div class="feedback-header">
                         <h3>💪 Your Strengths</h3>
                     </div>
                     <ul id="strengthsList" class="feedback-list"></ul>
                 </div>
-
-                <div class="feedback-card improvements">
+                    <div class="feedback-card improvements">
                     <div class="feedback-header">
                         <h3>⚠️ Areas for Improvement</h3>
                     </div>
                     <ul id="improvementsList" class="feedback-list"></ul>
                 </div>
-
-                <div class="feedback-card recommendations">
+                    <div class="feedback-card recommendations">
                     <div class="feedback-header">
                         <h3>🎯 Actionable Recommendations</h3>
                     </div>
                     <div id="recommendationsList" class="recommendations-list"></div>
                 </div>
+                    <div class="language-section">
+                    <h3>💻 Programming Languages</h3>
+                    <div id="languageChart" class="language-chart"></div>
+                </div>
 
-                <div class="feedback-card repositories">
+
+            <!-- ===== ENHANCED SECTIONS ===== -->
+
+            <!-- XP / Rank Level -->
+                    <div class="action-buttons">
+                    <button id="newAnalysisBtn" class="btn-analyze" onclick="resetForm()">🔄 Analyze Another Profile</button>
+                    <button class="btn-secondary" onclick="downloadJSON()">⬇️ Download JSON</button>
+                    <button class="btn-secondary" onclick="downloadMarkdown()">📝 Markdown Report</button>
+                    <button class="btn-secondary" onclick="shareLink()">🔗 Share Link</button>
+                    <button class="btn-secondary" id="sharePortfolioBtn" onclick="sharePublicPortfolio()">🌐 Share My Portfolio</button>
+                    <button class="btn-secondary" id="exportPdfBtnNew" onclick="exportPDF()">📄 Export PDF</button>
+                </div>
+
+                <!-- ===== FEATURE 6: Skill Gap Recommendations ===== -->
+                    <div class="share-section reveal" id="shareSection" style="display:none;">
+                <h3>🌐 Share Your Portfolio</h3>
+                <div class="share-buttons">
+                    <button class="share-btn" onclick="copyShareLink()">🔗 Copy Share Link</button>
+                    <button class="share-btn" onclick="generateLinkedInSummary()">💼 LinkedIn Summary</button>
+                    <button class="share-btn" onclick="copyRecruiterProfile()">📄 Recruiter Profile</button>
+                    <button class="share-btn" onclick="downloadMarkdown()">📥 Download Report</button>
+                    <button class="share-btn" onclick="generateQR()">📱 Generate QR Code</button>
+                    <button class="share-btn" onclick="openEmbedCardModal()">📤 Embed Card</button>
+                </div>
+                <div class="linkedin-summary-box" id="linkedinSummaryBox" style="display:none;">
+                    <button class="copy-summary-btn" onclick="copySummary()">Copy</button>
+                    <div id="linkedinSummaryText"></div>
+                </div>
+                <div class="qr-wrap" id="qrWrap" style="display:none;"></div>
+            </div>
+                </div>
+
+
+                <div id="tab-repos" class="tab-pane">
+                    <div class="feedback-card repositories">
                     <div class="feedback-header">
                         <h3>📚 Top Repositories</h3>
                     </div>
@@ -1891,17 +1993,47 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
 
                     <div id="reposList" class="repos-list"></div>
                 </div>
+                    <div class="language-section" id="repoHealthSection" style="display:none;margin-top:24px;">
+                    <h3>🩺 Repository Health Check</h3>
+                    <p style="color:#666;margin-bottom:14px;">Flags repositories missing key signals that recruiters look for:</p>
+                    <div id="repoHealthGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;"></div>
+                </div>
 
-                <div class="language-section">
-                    <h3>💻 Programming Languages</h3>
-                    <div id="languageChart" class="language-chart"></div>
+                <!-- ===== NEW FEATURE B: Tech Stack Fingerprint ===== -->
+                    <div class="language-section" id="techStackSection" style="display:none;margin-top:24px;">
+                    <h3>🔬 Tech Stack Fingerprint</h3>
+                    <p style="color:#666;margin-bottom:14px;">Your detected technologies, frameworks, and tooling:</p>
+                    <div id="techStackGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
+                    <div id="techStackCategory" style="margin-top:8px;font-size:.88em;color:#888;"></div>
+                </div>
+
+                <!-- ===== NEW FEATURE C: Recruiter Snapshot Card ===== -->
+                    <div class="language-section" id="starLeaderSection" style="display:none;margin-top:24px;">
+                    <h3>&#11088; Top Repo Spotlight</h3>
+                    <p style="color:#666;margin-bottom:14px;">Your highest impact repositories ranked by community engagement:</p>
+                    <div id="starLeaderGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;"></div>
+                </div>
+
+                <!-- ===== NEW FEATURE F: Profile Completeness Advisor ===== -->
+                    <div class="language-section" id="readmeAnalyzerSection" style="display:none;margin-top:24px;">
+                    <h3>📄 README Analyzer</h3>
+                    <p style="color:#666;margin-bottom:16px;">Evaluate your repositories' README quality and completeness.</p>
+                    <div id="readmeAnalyzerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;"></div>
+                </div>
+
+                <!-- ===== ENTERPRISE FEATURE 4: Portfolio Strength Analyzer ===== -->
+                    <div class="language-section" id="repoDeepAnalysisSection" style="display:none;margin-top:24px;">
+                    <h3>🔍 Repository Deep Analysis</h3>
+                    <p style="color:#666;margin-bottom:16px;">Professional audit of folder structure, architecture, naming conventions, and technical debt.</p>
+                    <div id="repoDeepAnalysisContent"></div>
+                </div>
+
+                <!-- ===== ENTERPRISE FEATURE 3: README Analyzer ===== -->
                 </div>
 
 
-            <!-- ===== ENHANCED SECTIONS ===== -->
-
-            <!-- XP / Rank Level -->
-            <div class="xp-section reveal" id="xpSection" style="display:none;">
+                <div id="tab-strength" class="tab-pane">
+                    <div class="xp-section reveal" id="xpSection" style="display:none;">
                 <div class="xp-header">
                     <span class="xp-title">🎮 Developer Rank</span>
                     <span class="rank-badge" id="rankBadge">⚡ Analyzing...</span>
@@ -1914,7 +2046,7 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
             </div>
 
             <!-- Stats Insights Row -->
-            <div class="stats-insights reveal" id="statsInsights" style="display:none;">
+                    <div class="stats-insights reveal" id="statsInsights" style="display:none;">
                 <div class="stats-insight-card" data-tip="Original repos only">
                     <div class="si-value animated-counter" id="siOriginal">0</div>
                     <div class="si-label">Original Repos</div>
@@ -1942,29 +2074,14 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
             </div>
 
             <!-- AI Insights -->
-            <div class="ai-insights-section reveal" id="aiSection" style="display:none;">
-                <h3>🧠 AI-Style Portfolio Insights</h3>
-                <div class="recruiter-impression" id="recruiterImpression">
-                    <p id="recruiterText">Generating recruiter impression...</p>
-                    <span class="strength-level-badge" id="devLevel">Analyzing...</span>
+                    <div class="language-section" id="streakTrackerSection" style="display:none;margin-top:24px;">
+                    <h3>&#128293; GitHub Streak Tracker</h3>
+                    <p style="color:#666;margin-bottom:14px;">Your commit consistency and activity streaks:</p>
+                    <div id="streakTrackerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:16px;"></div>
                 </div>
-                <div class="ai-insight-grid" id="aiInsightGrid"></div>
-                <div style="margin-top:20px;">
-                    <div class="ai-insight-card">
-                        <div class="ai-label">🎯 Top Skills Detected</div>
-                        <div id="topSkillsTags" class="skills-tags" style="margin-top:8px;"></div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Achievements -->
-            <div class="achievements-section reveal" id="achievementsSection" style="display:none;">
-                <h3>🏆 Achievement Badges</h3>
-                <div class="achievements-grid" id="achievementsGrid"></div>
-            </div>
-
-            <!-- Charts -->
-            <div class="charts-section reveal" id="chartsSection" style="display:none;">
+                <!-- ===== NEW FEATURE E: Star Leaderboard &amp; Top Repo Spotlight ===== -->
+                    <div class="charts-section reveal" id="chartsSection" style="display:none;">
                 <h3>📊 Visual Analytics</h3>
                 <div class="charts-grid">
                     <div class="chart-wrap">
@@ -1983,7 +2100,7 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
             </div>
 
             <!-- Contribution Heatmap -->
-            <div class="heatmap-section reveal" id="heatmapSection" style="display:none;">
+                    <div class="heatmap-section reveal" id="heatmapSection" style="display:none;">
                 <h3>🗓️ Repository Update Heatmap (Past Year)</h3>
                 <div class="heatmap-grid" id="heatmapGrid"></div>
                 <div class="heatmap-legend">
@@ -1997,7 +2114,105 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
             </div>
 
             <!-- ATS Scoring & Recruiter Checklist -->
-            <div class="ats-section reveal" id="atsSection" style="display:none;">
+                    <div class="language-section" id="contributionConsistencySection" style="display:none;margin-top:24px;">
+                    <h3>📅 Contribution Consistency Analysis</h3>
+                    <p style="color:#666;margin-bottom:16px;">AI-powered analysis of your GitHub activity patterns and productivity trends.</p>
+                    <div id="contributionConsistencyContent"></div>
+                </div>
+
+                <!-- ===== ENTERPRISE FEATURE 7: Open Source Readiness ===== -->
+                    <div class="language-section" id="growthTimelineSection" style="display:none;margin-top:24px;">
+                    <h3>📈 GitHub Growth Timeline</h3>
+                    <p style="color:#666;margin-bottom:16px;">Your developer evolution from beginner to specialist.</p>
+                    <div id="growthTimelineContent"></div>
+                </div>
+
+                <!-- ===== ENTERPRISE FEATURE 9: Professional Export Report ===== -->
+                </div>
+
+
+                <div id="tab-ai" class="tab-pane">
+                    <div class="ai-insights-section reveal" id="aiSection" style="display:none;">
+                <h3>🧠 AI-Style Portfolio Insights</h3>
+                <div class="recruiter-impression" id="recruiterImpression">
+                    <p id="recruiterText">Generating recruiter impression...</p>
+                    <span class="strength-level-badge" id="devLevel">Analyzing...</span>
+                </div>
+                <div class="ai-insight-grid" id="aiInsightGrid"></div>
+                <div style="margin-top:20px;">
+                    <div class="ai-insight-card">
+                        <div class="ai-label">🎯 Top Skills Detected</div>
+                        <div id="topSkillsTags" class="skills-tags" style="margin-top:8px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievements -->
+                    <div class="language-section" id="recruiterSnapshotSection" style="display:none;margin-top:24px;">
+                    <h3>📋 Recruiter Snapshot</h3>
+                    <p style="color:#666;margin-bottom:14px;">Key signals a recruiter sees in the first 30 seconds:</p>
+                    <div id="recruiterSnapshotGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;"></div>
+                </div>
+
+                <!-- ===== NEW FEATURE D: GitHub Streak Tracker ===== -->
+                    <div class="language-section" id="profileAdvisorSection" style="display:none;margin-top:24px;">
+                    <h3>&#127919; Profile Completeness Advisor</h3>
+                    <p style="color:#666;margin-bottom:14px;">Step-by-step actions to maximize your GitHub profile for recruiters:</p>
+                    <div id="profileAdvisorList" style="display:flex;flex-direction:column;gap:10px;"></div>
+                    <div id="profileAdvisorScore" style="margin-top:16px;"></div>
+                </div>
+
+                <!-- ===== ENTERPRISE FEATURE 1: AI Project Quality Judge ===== -->
+                    <div class="language-section" id="aiQualityJudgeSection" style="display:none;margin-top:24px;">
+                    <h3>🤖 AI Project Quality Judge</h3>
+                    <p style="color:#666;margin-bottom:16px;">Deep AI analysis of your top repositories across 8 quality dimensions.</p>
+                    <div id="aiQualityJudgeGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;"></div>
+                </div>
+
+                <!-- ===== ENTERPRISE FEATURE 2: Repository Deep Analysis ===== -->
+                    <div class="language-section" id="portfolioStrengthSection" style="display:none;margin-top:24px;">
+                    <h3>💪 Portfolio Strength Analyzer</h3>
+                    <p style="color:#666;margin-bottom:16px;">Category-based strength breakdown across all major development domains.</p>
+                    <div id="portfolioStrengthGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;"></div>
+                    <div id="portfolioStrengthInsights" style="margin-top:20px;"></div>
+                </div>
+
+                <!-- ===== ENTERPRISE FEATURE 5: Architecture Detection ===== -->
+                    <div class="language-section" id="architectureDetectionSection" style="display:none;margin-top:24px;">
+                    <h3>🏗️ Architecture Detection Engine</h3>
+                    <p style="color:#666;margin-bottom:16px;">Auto-detects architecture patterns across your repositories.</p>
+                    <div id="architectureDetectionContent"></div>
+                </div>
+
+                <!-- ===== ENTERPRISE FEATURE 6: Contribution Consistency ===== -->
+                    <div class="language-section" id="openSourceReadinessSection" style="display:none;margin-top:24px;">
+                    <h3>🌍 Open Source Readiness Score</h3>
+                    <p style="color:#666;margin-bottom:16px;">Evaluate how ready your repos are for open-source collaboration.</p>
+                    <div id="openSourceReadinessGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;"></div>
+                </div>
+
+                <!-- ===== ENTERPRISE FEATURE 8: GitHub Growth Timeline ===== -->
+                    <div class="language-section" id="professionalExportSection" style="display:none;margin-top:24px;">
+                    <h3>📋 Professional Export Report</h3>
+                    <p style="color:#666;margin-bottom:16px;">Generate a complete enterprise-grade portfolio report.</p>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                        <button class="btn-analyze" onclick="exportProfessionalReport('html')" style="padding:12px 24px;">📄 Export Full HTML Report</button>
+                        <button class="btn-secondary" onclick="exportProfessionalReport('print')" style="padding:12px 24px;">🖨️ Print Report</button>
+                        <button class="btn-secondary" onclick="exportProfessionalReport('json')" style="padding:12px 24px;">📦 Export JSON Bundle</button>
+                    </div>
+                    <div id="professionalExportPreview" style="margin-top:18px;"></div>
+                </div>
+
+                                </div>
+
+            </section>
+
+            <!-- ===== FEATURE 3: 3-User Compare with Radar Chart ===== -->
+                </div>
+
+
+                <div id="tab-resume" class="tab-pane">
+                    <div class="ats-section reveal" id="atsSection" style="display:none;">
                 <h3>📋 Recruiter Checklist & ATS Score</h3>
                 <ul class="ats-checklist" id="atsChecklist"></ul>
                 <div style="margin-top:24px;">
@@ -2008,35 +2223,7 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
             </div>
 
             <!-- Share & Social -->
-            <div class="share-section reveal" id="shareSection" style="display:none;">
-                <h3>🌐 Share Your Portfolio</h3>
-                <div class="share-buttons">
-                    <button class="share-btn" onclick="copyShareLink()">🔗 Copy Share Link</button>
-                    <button class="share-btn" onclick="generateLinkedInSummary()">💼 LinkedIn Summary</button>
-                    <button class="share-btn" onclick="copyRecruiterProfile()">📄 Recruiter Profile</button>
-                    <button class="share-btn" onclick="downloadMarkdown()">📥 Download Report</button>
-                    <button class="share-btn" onclick="generateQR()">📱 Generate QR Code</button>
-                    <button class="share-btn" onclick="openEmbedCardModal()">📤 Embed Card</button>
-                </div>
-                <div class="linkedin-summary-box" id="linkedinSummaryBox" style="display:none;">
-                    <button class="copy-summary-btn" onclick="copySummary()">Copy</button>
-                    <div id="linkedinSummaryText"></div>
-                </div>
-                <div class="qr-wrap" id="qrWrap" style="display:none;"></div>
-            </div>
-
-
-                <div class="action-buttons">
-                    <button id="newAnalysisBtn" class="btn-analyze" onclick="resetForm()">🔄 Analyze Another Profile</button>
-                    <button class="btn-secondary" onclick="downloadJSON()">⬇️ Download JSON</button>
-                    <button class="btn-secondary" onclick="downloadMarkdown()">📝 Markdown Report</button>
-                    <button class="btn-secondary" onclick="shareLink()">🔗 Share Link</button>
-                    <button class="btn-secondary" id="sharePortfolioBtn" onclick="sharePublicPortfolio()">🌐 Share My Portfolio</button>
-                    <button class="btn-secondary" id="exportPdfBtnNew" onclick="exportPDF()">📄 Export PDF</button>
-                </div>
-
-                <!-- ===== FEATURE 6: Skill Gap Recommendations ===== -->
-                <div class="language-section skill-gap-section" id="skillGapSection" style="display:none;margin-top:24px;">
+                    <div class="language-section skill-gap-section" id="skillGapSection" style="display:none;margin-top:24px;">
                     <h3>🎯 AI Skill Gap Detector</h3>
                     <p style="color:#666;margin-bottom:14px;">Select your target role to get personalized recommendations:</p>
                     <div id="skillGapControls" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
@@ -2064,124 +2251,17 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
 
 
                 <!-- ===== NEW FEATURE A: Repo Health Checker ===== -->
-                <div class="language-section" id="repoHealthSection" style="display:none;margin-top:24px;">
-                    <h3>🩺 Repository Health Check</h3>
-                    <p style="color:#666;margin-bottom:14px;">Flags repositories missing key signals that recruiters look for:</p>
-                    <div id="repoHealthGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;"></div>
-                </div>
+                    <div class="achievements-section reveal" id="achievementsSection" style="display:none;">
+                <h3>🏆 Achievement Badges</h3>
+                <div class="achievements-grid" id="achievementsGrid"></div>
+            </div>
 
-                <!-- ===== NEW FEATURE B: Tech Stack Fingerprint ===== -->
-                <div class="language-section" id="techStackSection" style="display:none;margin-top:24px;">
-                    <h3>🔬 Tech Stack Fingerprint</h3>
-                    <p style="color:#666;margin-bottom:14px;">Your detected technologies, frameworks, and tooling:</p>
-                    <div id="techStackGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
-                    <div id="techStackCategory" style="margin-top:8px;font-size:.88em;color:#888;"></div>
+            <!-- Charts -->
                 </div>
-
-                <!-- ===== NEW FEATURE C: Recruiter Snapshot Card ===== -->
-                <div class="language-section" id="recruiterSnapshotSection" style="display:none;margin-top:24px;">
-                    <h3>📋 Recruiter Snapshot</h3>
-                    <p style="color:#666;margin-bottom:14px;">Key signals a recruiter sees in the first 30 seconds:</p>
-                    <div id="recruiterSnapshotGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;"></div>
-                </div>
-
-                <!-- ===== NEW FEATURE D: GitHub Streak Tracker ===== -->
-                <div class="language-section" id="streakTrackerSection" style="display:none;margin-top:24px;">
-                    <h3>&#128293; GitHub Streak Tracker</h3>
-                    <p style="color:#666;margin-bottom:14px;">Your commit consistency and activity streaks:</p>
-                    <div id="streakTrackerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:16px;"></div>
-                </div>
-
-                <!-- ===== NEW FEATURE E: Star Leaderboard &amp; Top Repo Spotlight ===== -->
-                <div class="language-section" id="starLeaderSection" style="display:none;margin-top:24px;">
-                    <h3>&#11088; Top Repo Spotlight</h3>
-                    <p style="color:#666;margin-bottom:14px;">Your highest impact repositories ranked by community engagement:</p>
-                    <div id="starLeaderGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;"></div>
-                </div>
-
-                <!-- ===== NEW FEATURE F: Profile Completeness Advisor ===== -->
-                <div class="language-section" id="profileAdvisorSection" style="display:none;margin-top:24px;">
-                    <h3>&#127919; Profile Completeness Advisor</h3>
-                    <p style="color:#666;margin-bottom:14px;">Step-by-step actions to maximize your GitHub profile for recruiters:</p>
-                    <div id="profileAdvisorList" style="display:flex;flex-direction:column;gap:10px;"></div>
-                    <div id="profileAdvisorScore" style="margin-top:16px;"></div>
-                </div>
-
-                <!-- ===== ENTERPRISE FEATURE 1: AI Project Quality Judge ===== -->
-                <div class="language-section" id="aiQualityJudgeSection" style="display:none;margin-top:24px;">
-                    <h3>🤖 AI Project Quality Judge</h3>
-                    <p style="color:#666;margin-bottom:16px;">Deep AI analysis of your top repositories across 8 quality dimensions.</p>
-                    <div id="aiQualityJudgeGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;"></div>
-                </div>
-
-                <!-- ===== ENTERPRISE FEATURE 2: Repository Deep Analysis ===== -->
-                <div class="language-section" id="repoDeepAnalysisSection" style="display:none;margin-top:24px;">
-                    <h3>🔍 Repository Deep Analysis</h3>
-                    <p style="color:#666;margin-bottom:16px;">Professional audit of folder structure, architecture, naming conventions, and technical debt.</p>
-                    <div id="repoDeepAnalysisContent"></div>
-                </div>
-
-                <!-- ===== ENTERPRISE FEATURE 3: README Analyzer ===== -->
-                <div class="language-section" id="readmeAnalyzerSection" style="display:none;margin-top:24px;">
-                    <h3>📄 README Analyzer</h3>
-                    <p style="color:#666;margin-bottom:16px;">Evaluate your repositories' README quality and completeness.</p>
-                    <div id="readmeAnalyzerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;"></div>
-                </div>
-
-                <!-- ===== ENTERPRISE FEATURE 4: Portfolio Strength Analyzer ===== -->
-                <div class="language-section" id="portfolioStrengthSection" style="display:none;margin-top:24px;">
-                    <h3>💪 Portfolio Strength Analyzer</h3>
-                    <p style="color:#666;margin-bottom:16px;">Category-based strength breakdown across all major development domains.</p>
-                    <div id="portfolioStrengthGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;"></div>
-                    <div id="portfolioStrengthInsights" style="margin-top:20px;"></div>
-                </div>
-
-                <!-- ===== ENTERPRISE FEATURE 5: Architecture Detection ===== -->
-                <div class="language-section" id="architectureDetectionSection" style="display:none;margin-top:24px;">
-                    <h3>🏗️ Architecture Detection Engine</h3>
-                    <p style="color:#666;margin-bottom:16px;">Auto-detects architecture patterns across your repositories.</p>
-                    <div id="architectureDetectionContent"></div>
-                </div>
-
-                <!-- ===== ENTERPRISE FEATURE 6: Contribution Consistency ===== -->
-                <div class="language-section" id="contributionConsistencySection" style="display:none;margin-top:24px;">
-                    <h3>📅 Contribution Consistency Analysis</h3>
-                    <p style="color:#666;margin-bottom:16px;">AI-powered analysis of your GitHub activity patterns and productivity trends.</p>
-                    <div id="contributionConsistencyContent"></div>
-                </div>
-
-                <!-- ===== ENTERPRISE FEATURE 7: Open Source Readiness ===== -->
-                <div class="language-section" id="openSourceReadinessSection" style="display:none;margin-top:24px;">
-                    <h3>🌍 Open Source Readiness Score</h3>
-                    <p style="color:#666;margin-bottom:16px;">Evaluate how ready your repos are for open-source collaboration.</p>
-                    <div id="openSourceReadinessGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;"></div>
-                </div>
-
-                <!-- ===== ENTERPRISE FEATURE 8: GitHub Growth Timeline ===== -->
-                <div class="language-section" id="growthTimelineSection" style="display:none;margin-top:24px;">
-                    <h3>📈 GitHub Growth Timeline</h3>
-                    <p style="color:#666;margin-bottom:16px;">Your developer evolution from beginner to specialist.</p>
-                    <div id="growthTimelineContent"></div>
-                </div>
-
-                <!-- ===== ENTERPRISE FEATURE 9: Professional Export Report ===== -->
-                <div class="language-section" id="professionalExportSection" style="display:none;margin-top:24px;">
-                    <h3>📋 Professional Export Report</h3>
-                    <p style="color:#666;margin-bottom:16px;">Generate a complete enterprise-grade portfolio report.</p>
-                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
-                        <button class="btn-analyze" onclick="exportProfessionalReport('html')" style="padding:12px 24px;">📄 Export Full HTML Report</button>
-                        <button class="btn-secondary" onclick="exportProfessionalReport('print')" style="padding:12px 24px;">🖨️ Print Report</button>
-                        <button class="btn-secondary" onclick="exportProfessionalReport('json')" style="padding:12px 24px;">📦 Export JSON Bundle</button>
-                    </div>
-                    <div id="professionalExportPreview" style="margin-top:18px;"></div>
-                </div>
-
-                                </div>
 
             </section>
 
-            <!-- ===== FEATURE 3: 3-User Compare with Radar Chart ===== -->
-            <section class="compare-section" id="compareSection">
+<section class="compare-section" id="compareSection">
                 <div class="compare-card">
                     <h3>⚖️ Compare GitHub Profiles (up to 3)</h3>
                     <p style="color:#666;margin-bottom:16px;">Compare up to three developers side by side with a radar chart across all 5 score pillars.</p>
@@ -2725,6 +2805,7 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
                 .join('');
 
             resultsSection.classList.remove('hidden');
+            if (typeof switchAnalysisTab === 'function') switchAnalysisTab('overview');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -7229,5 +7310,31 @@ if (document.readyState === 'loading') {
      ============================================================ -->
 <script src="enterprise-features.js"></script>
 
+
+<script>
+function switchAnalysisTab(tabName) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+    const target = document.getElementById('tab-' + tabName);
+    if (target) target.classList.add('active');
+
+    const activeBtn = Array.from(document.querySelectorAll('.tab-btn'))
+        .find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabName));
+    if (activeBtn) activeBtn.classList.add('active');
+
+    if (history.replaceState) {
+        history.replaceState(null, null, '#' + tabName);
+    }
+}
+
+// Listen for hash change / deep links
+window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && document.getElementById('tab-' + hash)) {
+        switchAnalysisTab(hash);
+    }
+});
+</script>
 </body>
 </html>
