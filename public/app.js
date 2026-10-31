@@ -5529,6 +5529,7 @@ window.scrollToCompare = scrollToCompare;
 /* ─── Tab Arrow Keyboard Navigation ─── */
 document.addEventListener('DOMContentLoaded', () => {
     setupResumeDropzone();
+    setupUserAutocomplete();
     const tabs = Array.from(document.querySelectorAll('.tab-btn'));
     tabs.forEach((tab, idx) => {
         tab.setAttribute('tabindex', '0');
@@ -5547,6 +5548,113 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+/* ─── Live GitHub User Autocomplete & Search Suggestions ─── */
+let autocompleteTimer = null;
+let activeSuggestionIndex = -1;
+
+function setupUserAutocomplete() {
+    const input = document.getElementById('githubInput');
+    const dropdown = document.getElementById('userSuggestions');
+    if (!input || !dropdown) return;
+
+    input.addEventListener('input', () => {
+        clearTimeout(autocompleteTimer);
+        const raw = (input.value || '').trim();
+        let query = raw;
+        if (query.includes('github.com/')) {
+            const parts = query.split('github.com/');
+            query = (parts[1] || '').split('/')[0].split('?')[0].trim();
+        }
+
+        if (query.length < 2) {
+            dropdown.style.display = 'none';
+            dropdown.innerHTML = '';
+            activeSuggestionIndex = -1;
+            return;
+        }
+
+        autocompleteTimer = setTimeout(async () => {
+            try {
+                // Try transparent proxy first, with fallback to direct GitHub API
+                let res = await fetch(`/api/github/search/users?q=${encodeURIComponent(query)}+in:login&per_page=6`).catch(() => null);
+                if (!res || !res.ok) {
+                    res = await fetch(`https://api.github.com/search/users?q=${encodeURIComponent(query)}+in:login&per_page=6`).catch(() => null);
+                }
+                if (!res || !res.ok) {
+                    dropdown.style.display = 'none';
+                    return;
+                }
+                const data = await res.json();
+                const users = (data && data.items) || [];
+                if (!users.length) {
+                    dropdown.innerHTML = '<div style="padding:10px 14px;color:#888;font-size:0.9em;text-align:left;">No matching GitHub profiles found</div>';
+                    dropdown.style.display = 'block';
+                    return;
+                }
+
+                activeSuggestionIndex = -1;
+                dropdown.innerHTML = users.map((u, idx) => `
+                    <div class="suggestion-item" data-index="${idx}" data-login="${u.login}" onclick="selectUserSuggestion('${u.login}')">
+                        <img src="${u.avatar_url}" class="suggestion-avatar" alt="${u.login}" onerror="this.src='https://github.com/ghost.png'">
+                        <div class="suggestion-info">
+                            <span class="suggestion-login">${u.login}</span>
+                            <span class="suggestion-type">${u.type || 'Developer'}</span>
+                        </div>
+                        <span class="suggestion-badge">Analyze ↵</span>
+                    </div>
+                `).join('');
+                dropdown.style.display = 'block';
+            } catch (err) {
+                console.warn('User suggestions error:', err);
+                dropdown.style.display = 'none';
+            }
+        }, 220);
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (dropdown.style.display === 'none') return;
+        const items = dropdown.querySelectorAll('.suggestion-item');
+        if (!items.length) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
+            items.forEach((it, i) => it.classList.toggle('active', i === activeSuggestionIndex));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
+            items.forEach((it, i) => it.classList.toggle('active', i === activeSuggestionIndex));
+        } else if (e.key === 'Enter' && activeSuggestionIndex >= 0) {
+            e.preventDefault();
+            const selected = items[activeSuggestionIndex];
+            if (selected) {
+                const login = selected.getAttribute('data-login');
+                if (login) selectUserSuggestion(login);
+            }
+        } else if (e.key === 'Escape') {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+}
+
+function selectUserSuggestion(login) {
+    const input = document.getElementById('githubInput');
+    const dropdown = document.getElementById('userSuggestions');
+    if (input) input.value = login;
+    if (dropdown) dropdown.style.display = 'none';
+    if (typeof handleAnalysis === 'function') {
+        handleAnalysis();
+    }
+}
+window.selectUserSuggestion = selectUserSuggestion;
+window.setupUserAutocomplete = setupUserAutocomplete;
 
 
 

@@ -55,12 +55,17 @@
                     </div>
 
                     <div class="input-group">
-                        <input 
-                            type="text" 
-                            id="githubInput" 
-                            placeholder="https://github.com/username or just username" 
-                            class="input-field"
-                        >
+                        <div class="input-field-wrap">
+                            <input 
+                                type="text" 
+                                id="githubInput" 
+                                placeholder="https://github.com/username or just username" 
+                                class="input-field"
+                                autocomplete="off"
+                                spellcheck="false"
+                            >
+                            <div id="userSuggestions" class="user-suggestions-dropdown" style="display:none;" role="listbox"></div>
+                        </div>
                         <button id="analyzeBtn" class="btn-analyze" onclick="handleAnalysis()">Analyze Profile</button>
                     </div>
                     <p class="info-text">📈 Analyzes: Repositories • Documentation • Commit History • Code Quality • Impact & More</p>
@@ -311,16 +316,6 @@
 
             <!-- ===== ENHANCED SECTIONS ===== -->
 
-            <!-- XP / Rank Level -->
-                    <div class="action-buttons">
-                    <button id="newAnalysisBtn" class="btn-analyze" onclick="resetForm()">🔄 Analyze Another Profile</button>
-                    <button class="btn-secondary" onclick="downloadJSON()">⬇️ Download JSON</button>
-                    <button class="btn-secondary" onclick="downloadMarkdown()">📝 Markdown Report</button>
-                    <button class="btn-secondary" onclick="shareLink()">🔗 Share Link</button>
-                    <button class="btn-secondary" id="sharePortfolioBtn" onclick="sharePublicPortfolio()">🌐 Share My Portfolio</button>
-                    <button class="btn-secondary" id="exportPdfBtnNew" onclick="exportPDF()">📄 Export PDF</button>
-                </div>
-
                 <!-- ===== FEATURE 6: Skill Gap Recommendations ===== -->
                     
                     <!-- ===== 👤 What is Missing from Your GitHub Profile ===== -->
@@ -518,9 +513,6 @@
                 </div>
             </div>
 
-                <!-- ===== ENTERPRISE FEATURE 9: Professional Export Report ===== -->
-                </div>
-
                 <div id="tab-ai" class="tab-pane">
                     <div class="ai-insights-section reveal" id="aiSection" style="display:none;">
                 <h3>🧠 AI-Style Portfolio Insights</h3>
@@ -595,11 +587,6 @@
 
                                 </div>
 
-            </section>
-
-            <!-- ===== FEATURE 3: 3-User Compare with Radar Chart ===== -->
-                </div>
-
                 <div id="tab-resume" class="tab-pane">
                     <div class="ats-section reveal" id="atsSection" style="display:none;">
                 <h3>📋 Recruiter Checklist & ATS Score</h3>
@@ -666,6 +653,18 @@
                     
 
             <!-- Charts -->
+                </div>
+
+                <!-- ===== GLOBAL ACTION BAR (Directly before Compare section, across all tabs) ===== -->
+                <div class="global-actions-card" id="globalActionButtons">
+                    <div class="action-buttons">
+                        <button id="newAnalysisBtn" class="btn-analyze" onclick="resetForm()">🔄 Analyze Another Profile</button>
+                        <button class="btn-secondary" onclick="downloadJSON()">⬇️ Download JSON</button>
+                        <button class="btn-secondary" onclick="downloadMarkdown()">📝 Markdown Report</button>
+                        <button class="btn-secondary" onclick="shareLink()">🔗 Share Link</button>
+                        <button class="btn-secondary" id="sharePortfolioBtn" onclick="sharePublicPortfolio()">🌐 Share My Portfolio</button>
+                        <button class="btn-secondary" id="exportPdfBtnNew" onclick="exportPDF()">📄 Export PDF</button>
+                    </div>
                 </div>
 
             </section>
