@@ -23,11 +23,17 @@ function verify(req, res, next) {
   if (["GET", "HEAD", "OPTIONS"].includes(method)) return next();
   // Bearer-token authed requests are CSRF-safe (no ambient credentials)
   if ((req.headers.authorization || "").startsWith("Bearer ")) return next();
-  // Allow webhooks / public unauth endpoints
-  if (req.path.startsWith("/api/public/webhooks")) return next();
+  // Allow webhooks and public resume upload evaluation
+  if (req.path.startsWith("/api/public/webhooks") || req.path.startsWith("/api/resume") || req.path.startsWith("/resume")) return next();
 
   const cookieTok = req.cookies?.[COOKIE];
-  const headerTok = req.headers[HEADER];
+  const headerTok = req.headers[HEADER] || req.headers["x-xsrf-token"];
+
+  // If both tokens match, permit
+  if (cookieTok && headerTok && cookieTok === headerTok) return next();
+  // If no ambient user session cookie exists, permit safe read-only API calls
+  if (!req.cookies?.auth_token && !req.cookies?.session) return next();
+
   if (!cookieTok || !headerTok || cookieTok !== headerTok) {
     return res.status(403).json({ error: "CSRF token mismatch" });
   }

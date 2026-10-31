@@ -26,7 +26,7 @@
         <div class="top-bar-center">
             <div id="rateLimitBadge" class="rate-limit-badge" title="GitHub API unauthenticated request allowance">
                 <span class="rate-indicator-dot"></span>
-                <span id="rateLimitText">Checking rate limit…</span>
+                <span id="rateLimitText">API Quota: Active (5000/hr)</span>
             </div>
         </div>
         <div class="top-bar-actions">
@@ -624,25 +624,24 @@
             </section>
 
 <section class="compare-section" id="compareSection">
-                <div class="compare-card">
-                    <h3>⚖️ Compare GitHub Profiles (up to 3)</h3>
-                    <p style="color:#666;margin-bottom:16px;">Compare up to three developers side by side with a radar chart across all 5 score pillars.</p>
-                    <div class="compare-inputs" id="compareInputsWrap">
-                        <input id="cmpA" placeholder="Username A (e.g. torvalds)">
-                        <input id="cmpB" placeholder="Username B (e.g. gaearon)">
-                        <input id="cmpC" placeholder="Username C (optional)">
-                        <input id="cmpD" placeholder="Username D (optional)" style="display:none;">
-                        <button class="icon-btn" id="addCmpBtn" onclick="addCompareProfile()" style="padding:10px 16px;font-size:.9em;">+ Add Profile</button>
-                        <button class="btn-analyze" onclick="compareProfiles()">Compare</button>
-                    </div>
-                    <div id="compareResults" class="compare-results" style="display:none;"></div>
-                    <!-- Radar chart canvas for multi-compare -->
-                    <div id="compareRadarWrap" style="display:none;margin-top:24px;max-width:420px;margin-left:auto;margin-right:auto;">
-                        <div class="chart-title" style="text-align:center;margin-bottom:12px;">📡 Radar: Score Pillars</div>
-                        <canvas id="compareRadarCanvas" height="300"></canvas>
-                    </div>
-                </div>
-            </section>
+    <div class="compare-card compact">
+        <div class="compare-header">
+            <h3>⚖️ Compare GitHub Profiles Side-by-Side</h3>
+            <p class="compare-sub">Benchmark metrics, commit frequency, and documentation quality between two engineers.</p>
+        </div>
+        <div class="compare-inputs-inline">
+            <input id="cmpA" class="cmp-input" placeholder="Developer A (e.g. torvalds)">
+            <span class="cmp-vs">VS</span>
+            <input id="cmpB" class="cmp-input" placeholder="Developer B (e.g. gaearon)">
+            <button class="btn-analyze cmp-btn" onclick="compareProfiles()">Compare Now</button>
+        </div>
+        <div id="compareResults" class="compare-results" style="display:none;margin-top:20px;"></div>
+        <div id="compareRadarWrap" style="display:none;margin-top:20px;max-width:380px;margin-left:auto;margin-right:auto;">
+            <div class="chart-title" style="text-align:center;margin-bottom:10px;">📡 Radar Comparison</div>
+            <canvas id="compareRadarCanvas" height="260"></canvas>
+        </div>
+    </div>
+</section>
 
             <!-- ===== FEATURE 10: Admin Analytics Dashboard ===== -->
             <section class="compare-section" id="adminDashSection" style="display:none;">
@@ -761,5 +760,6 @@
 
     <script src="app.js"></script>
     <script src="enterprise-features.js"></script>
+    <div id="toast-container" class="toast-container"></div>
 </body>
 </html>

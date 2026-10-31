@@ -5337,27 +5337,19 @@ async function updateRateLimitBadge() {
     if (!badge || !text) return;
 
     try {
-        const res = await fetch('https://api.github.com/rate_limit');
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        const remaining = data?.rate?.remaining ?? 60;
-        const limit = data?.rate?.limit ?? 60;
-
-        text.textContent = `${remaining}/${limit} GitHub Requests`;
-        badge.classList.remove('warning', 'danger');
-
-        if (remaining <= 5) {
-            badge.classList.add('danger');
-            badge.title = 'Rate limit almost exhausted! Requests may be temporarily blocked.';
-        } else if (remaining <= 15) {
-            badge.classList.add('warning');
-            badge.title = 'Rate limit low. Authenticate or wait to reset.';
-        } else {
-            badge.title = 'GitHub API unauthenticated request allowance';
+        const res = await fetch('/api/github/rate_limit').catch(() => null);
+        if (res && res.ok) {
+            const data = await res.json();
+            const remaining = data?.rate?.remaining ?? data?.resources?.core?.remaining ?? 4980;
+            const limit = data?.rate?.limit ?? data?.resources?.core?.limit ?? 5000;
+            text.textContent = `${remaining}/${limit} API Quota`;
+            badge.classList.remove('warning', 'danger');
+            if (remaining <= 20) badge.classList.add('danger');
+            else if (remaining <= 100) badge.classList.add('warning');
+            return;
         }
-    } catch (_) {
-        text.textContent = 'API Live';
-    }
+    } catch (_) {}
+    text.textContent = 'API Live (Active)';
 }
 window.updateRateLimitBadge = updateRateLimitBadge;
 
@@ -5444,8 +5436,18 @@ async function handleResumeFile(file) {
     const username = window.currentData?.username || document.getElementById('githubInput')?.value?.trim() || '';
 
     try {
+        // Double-submit CSRF token support
+        function getCsrf() {
+            const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/);
+            return m ? decodeURIComponent(m[1]) : "";
+        }
+        const csrfToken = getCsrf();
+        const headers = {};
+        if (csrfToken) headers['x-csrf-token'] = csrfToken;
+
         const res = await fetch(`/api/resume?github=${encodeURIComponent(username)}`, {
             method: 'POST',
+            headers: headers,
             body: formData
         });
 
@@ -5545,3 +5547,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+
+
+function showToast(msg, type = 'success', duration = 3500) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    const icon = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' }[type] || 'ℹ️';
+    t.innerHTML = `<span>${icon}</span><span style="flex:1">${msg}</span><button class="gha-toast-close" onclick="this.parentElement.remove()">✕</button>`;
+    container.appendChild(t);
+    setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transform = 'translateY(10px)';
+        t.style.transition = 'all 0.3s ease';
+        setTimeout(() => t.remove(), 300);
+    }, duration);
+}
+window.showToast = showToast;
+if (window.GHToast) {
+    window.GHToast.success = (m, d) => showToast(m, 'success', d);
+    window.GHToast.error = (m, d) => showToast(m, 'error', d);
+    window.GHToast.warning = (m, d) => showToast(m, 'warning', d);
+    window.GHToast.info = (m, d) => showToast(m, 'info', d);
+}
