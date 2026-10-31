@@ -2856,12 +2856,13 @@ body.dark .toast, body.dark .gha-toast {
 
 /* ─── Compact SaaS Box Sizing & High-Contrast Typography ─── */
 .container {
-    max-width: 1160px !important;
+    width: 96% !important;
+    max-width: 1340px !important;
     margin: 0 auto !important;
-    padding: 0 24px !important;
+    padding: 0 16px !important;
 }
 
-/* Comfortable, modern SaaS padding across all cards */
+/* Generous, spacious SaaS padding across all cards (expanded left & right) */
 .input-card,
 .score-card,
 .profile-card,
@@ -2880,14 +2881,17 @@ body.dark .toast, body.dark .gha-toast {
 .charts-section,
 .heatmap-section,
 .global-actions-card {
-    padding: 24px 30px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 32px 42px !important;
     margin-bottom: 24px !important;
-    border-radius: 14px !important;
+    border-radius: 16px !important;
+    box-sizing: border-box !important;
 }
 
 @media (max-width: 768px) {
     .container {
-        padding: 0 12px !important;
+        padding: 0 10px !important;
     }
     .input-card,
     .score-card,
@@ -2897,7 +2901,7 @@ body.dark .toast, body.dark .gha-toast {
     .compare-card,
     .trending-panel,
     .global-actions-card {
-        padding: 18px 18px !important;
+        padding: 20px 18px !important;
     }
 }
 
@@ -2926,105 +2930,115 @@ body.dark .analysis-tabs-nav {
 .compare-card {
     max-width: 100% !important;
     margin: 0 auto 24px !important;
-    padding: 24px 30px !important;
+    padding: 32px 42px !important;
 }
 .compare-desc {
-    color: #475569;
-    font-size: 0.9em;
+    color: #1e293b !important;
+    font-size: 0.95em;
+    font-weight: 500;
     margin-bottom: 16px;
 }
 body.dark .compare-desc {
-    color: #94a3b8 !important;
+    color: #cbd5e1 !important;
 }
 
 /* ─── User Search Autocomplete & Suggestions ─── */
 .input-field-wrap {
-    position: relative;
-    flex: 1;
-    min-width: 280px;
+    position: relative !important;
+    flex: 1 !important;
+    min-width: 280px !important;
 }
 .input-field-wrap .input-field {
-    width: 100%;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 .user-suggestions-dropdown {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    right: 0;
-    background: #ffffff;
-    border: 1px solid var(--accent-teal, #76c7d1);
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    z-index: 1050;
-    max-height: 320px;
-    overflow-y: auto;
-    padding: 6px;
-    animation: fadeInDropdown 0.2s ease-out;
+    position: absolute !important;
+    top: calc(100% + 8px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    background: #ffffff !important;
+    border: 2px solid var(--primary-teal, #0d7377) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22) !important;
+    z-index: 999999 !important;
+    max-height: 380px !important;
+    overflow-y: auto !important;
+    padding: 8px !important;
+    display: none;
+    box-sizing: border-box !important;
+    animation: fadeInDropdown 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 body.dark .user-suggestions-dropdown {
-    background: #161b22;
-    border-color: #30363d;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+    background: #161b22 !important;
+    border-color: #388bfd !important;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.85) !important;
 }
 @keyframes fadeInDropdown {
-    from { opacity: 0; transform: translateY(-6px); }
+    from { opacity: 0; transform: translateY(-8px); }
     to { opacity: 1; transform: translateY(0); }
 }
 .suggestion-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.15s ease;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 10px 14px !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    transition: background 0.15s ease, transform 0.1s ease !important;
+    border: 1px solid transparent !important;
 }
 .suggestion-item:hover, .suggestion-item.active {
-    background: #eef8f8;
+    background: #eef8f8 !important;
+    border-color: var(--accent-teal, #76c7d1) !important;
+    transform: translateX(3px) !important;
 }
 body.dark .suggestion-item:hover, body.dark .suggestion-item.active {
-    background: #21262d;
+    background: #21262d !important;
+    border-color: #388bfd !important;
 }
 .suggestion-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1px solid rgba(0,0,0,0.1);
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 1.5px solid var(--accent-teal, #76c7d1) !important;
 }
 .suggestion-info {
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-    flex: 1;
-    min-width: 0;
+    display: flex !important;
+    flex-direction: column !important;
+    text-align: left !important;
+    flex: 1 !important;
+    min-width: 0 !important;
 }
 .suggestion-login {
-    font-weight: 600;
-    font-size: 0.95em;
-    color: var(--text-dark, #203647);
+    font-weight: 700 !important;
+    font-size: 1em !important;
+    color: #0f172a !important;
 }
 body.dark .suggestion-login {
-    color: #e6edf3;
+    color: #f1f5f9 !important;
 }
 .suggestion-type {
-    font-size: 0.78em;
-    color: #64748b;
+    font-size: 0.82em !important;
+    color: #475569 !important;
 }
 body.dark .suggestion-type {
-    color: #8b949e;
+    color: #94a3b8 !important;
 }
 .suggestion-badge {
-    font-size: 0.75em;
-    padding: 3px 10px;
-    background: rgba(118, 199, 209, 0.2);
-    color: var(--primary-teal, #0d7377);
-    border-radius: 999px;
-    font-weight: 600;
+    font-size: 0.78em !important;
+    padding: 4px 12px !important;
+    background: rgba(13, 115, 119, 0.12) !important;
+    color: var(--primary-teal, #0d7377) !important;
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px !important;
 }
 body.dark .suggestion-badge {
-    background: rgba(118, 199, 209, 0.15);
-    color: var(--accent-teal, #76c7d1);
+    background: rgba(56, 139, 253, 0.2) !important;
+    color: #79c0ff !important;
 }
 
 /* ─── Global Action Buttons Card (Before Compare Profiles) ─── */
@@ -3048,7 +3062,35 @@ body.dark .global-actions-card {
     margin: 0;
 }
 
-/* Dark mode text visibility enhancements */
+/* ─── High Contrast Text Visibility Across All Modes (No Light Grey) ─── */
+.section-desc {
+    color: #1e293b !important;
+    font-size: 0.96em !important;
+    font-weight: 500 !important;
+    line-height: 1.55 !important;
+}
+body.dark .section-desc {
+    color: #e2e8f0 !important;
+}
+.section-sub-desc {
+    font-size: 0.9em !important;
+    color: #334155 !important;
+    margin-top: 10px !important;
+    font-weight: 500 !important;
+}
+body.dark .section-sub-desc {
+    color: #cbd5e1 !important;
+}
+.tech-stack-cat-text {
+    margin-top: 8px !important;
+    font-size: 0.88em !important;
+    color: #334155 !important;
+    font-weight: 600 !important;
+}
+body.dark .tech-stack-cat-text {
+    color: #cbd5e1 !important;
+}
+
 body.dark .detail-label,
 body.dark .stat-label,
 body.dark .missing-profile-sub,
@@ -3057,12 +3099,12 @@ body.dark .resume-matcher-sub,
 body.dark .info-text,
 body.dark .subtitle,
 body.dark .tagline {
-    color: #94a3b8 !important;
+    color: #cbd5e1 !important;
 }
 body.dark .detail-value,
 body.dark .stat-value,
 body.dark .interpretation {
-    color: #e6edf3 !important;
+    color: #ffffff !important;
 }
 .compare-inputs {
     display: flex;
@@ -3126,11 +3168,21 @@ body.dark .tu-meta,
 body.dark .repo-desc,
 body.dark .recommendation-text,
 body.dark .subtitle,
+body.dark .tagline,
 body.dark .info-text,
 body.dark .missing-profile-sub,
 body.dark .share-section-desc,
-body.dark .card-desc {
-    color: #94a3b8 !important; /* Slate-400: perfectly visible on dark cards */
+body.dark .card-desc,
+body.dark .chart-title,
+body.dark .xp-info,
+body.dark .advisor-hint,
+body.dark .gap-reason,
+body.dark .streak-label,
+body.dark .as-lbl,
+body.dark .atr-count,
+body.dark .section-desc,
+body.dark .compare-desc {
+    color: #cbd5e1 !important; /* Luminous silver - highly visible on dark backgrounds */
 }
 body.dark .detail-value,
 body.dark .stat-value,

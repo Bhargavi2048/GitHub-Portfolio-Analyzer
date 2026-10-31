@@ -127,7 +127,7 @@
             <div id="loadingState" class="loading-state hidden">
                 <div class="spinner"></div>
                 <p>Analyzing your GitHub profile...</p>
-                <p style="font-size: 0.9em; color: #999; margin-top: 10px;">This may take a few moments</p>
+                <p class="section-sub-desc">This may take a few moments</p>
             </div>
 
             <div id="errorState" class="error-state hidden">
@@ -228,7 +228,7 @@
                 </div>
                     <div class="scoring-breakdown">
                     <h3>📈 Portfolio Scoring Breakdown</h3>
-                    <p style="color: #666; margin-bottom: 25px; font-size: 0.95em;">Based on 6 key metrics evaluated by recruiters:</p>
+                    <p class="section-desc" style="margin-bottom:25px;">Based on 6 key metrics evaluated by recruiters:</p>
                     <div class="metrics-grid">
                         <div class="metric-item">
                             <div class="metric-header">
@@ -375,36 +375,36 @@
                 </div>
                     <div class="language-section" id="repoHealthSection" style="display:none;margin-top:24px;">
                     <h3>🩺 Repository Health Check</h3>
-                    <p style="color:#666;margin-bottom:14px;">Flags repositories missing key signals that recruiters look for:</p>
+                    <p class="section-desc" style="margin-bottom:14px;">Flags repositories missing key signals that recruiters look for:</p>
                     <div id="repoHealthGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;"></div>
                 </div>
 
                 <!-- ===== NEW FEATURE B: Tech Stack Fingerprint ===== -->
                     <div class="language-section" id="techStackSection" style="display:none;margin-top:24px;">
                     <h3>🔬 Tech Stack Fingerprint</h3>
-                    <p style="color:#666;margin-bottom:14px;">Your detected technologies, frameworks, and tooling:</p>
+                    <p class="section-desc" style="margin-bottom:14px;">Your detected technologies, frameworks, and tooling:</p>
                     <div id="techStackGrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
-                    <div id="techStackCategory" style="margin-top:8px;font-size:.88em;color:#888;"></div>
+                    <div id="techStackCategory" class="tech-stack-cat-text"></div>
                 </div>
 
                 <!-- ===== NEW FEATURE C: Recruiter Snapshot Card ===== -->
                     <div class="language-section" id="starLeaderSection" style="display:none;margin-top:24px;">
                     <h3>&#11088; Top Repo Spotlight</h3>
-                    <p style="color:#666;margin-bottom:14px;">Your highest impact repositories ranked by community engagement:</p>
+                    <p class="section-desc" style="margin-bottom:14px;">Your highest impact repositories ranked by community engagement:</p>
                     <div id="starLeaderGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;"></div>
                 </div>
 
                 <!-- ===== NEW FEATURE F: Profile Completeness Advisor ===== -->
                     <div class="language-section" id="readmeAnalyzerSection" style="display:none;margin-top:24px;">
                     <h3>📄 README Analyzer</h3>
-                    <p style="color:#666;margin-bottom:16px;">Evaluate your repositories' README quality and completeness.</p>
+                    <p class="section-desc" style="margin-bottom:16px;">Evaluate your repositories' README quality and completeness.</p>
                     <div id="readmeAnalyzerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;"></div>
                 </div>
 
                 <!-- ===== ENTERPRISE FEATURE 4: Portfolio Strength Analyzer ===== -->
                     <div class="language-section" id="repoDeepAnalysisSection" style="display:none;margin-top:24px;">
                     <h3>🔍 Repository Deep Analysis</h3>
-                    <p style="color:#666;margin-bottom:16px;">Professional audit of folder structure, architecture, naming conventions, and technical debt.</p>
+                    <p class="section-desc" style="margin-bottom:16px;">Professional audit of folder structure, architecture, naming conventions, and technical debt.</p>
                     <div id="repoDeepAnalysisContent"></div>
                 </div>
 
@@ -455,7 +455,7 @@
             <!-- AI Insights -->
                     <div class="language-section" id="streakTrackerSection" style="display:none;margin-top:24px;">
                     <h3>&#128293; GitHub Streak Tracker</h3>
-                    <p style="color:#666;margin-bottom:14px;">Your commit consistency and activity streaks:</p>
+                    <p class="section-desc" style="margin-bottom:14px;">Your commit consistency and activity streaks:</p>
                     <div id="streakTrackerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:16px;"></div>
                 </div>
 
@@ -495,20 +495,20 @@
             <!-- ATS Scoring & Recruiter Checklist -->
                     <div class="language-section" id="contributionConsistencySection" style="display:none;margin-top:24px;">
                     <h3>📅 Contribution Consistency Analysis</h3>
-                    <p style="color:#666;margin-bottom:16px;">AI-powered analysis of your GitHub activity patterns and productivity trends.</p>
+                    <p class="section-desc" style="margin-bottom:16px;">AI-powered analysis of your GitHub activity patterns and productivity trends.</p>
                     <div id="contributionConsistencyContent"></div>
                 </div>
 
                 <!-- ===== ENTERPRISE FEATURE 7: Open Source Readiness ===== -->
                     <div class="language-section" id="growthTimelineSection" style="display:none;margin-top:24px;">
                     <h3>📈 GitHub Growth Timeline</h3>
-                    <p style="color:#666;margin-bottom:16px;">Your developer evolution from beginner to specialist.</p>
+                    <p class="section-desc" style="margin-bottom:16px;">Your developer evolution from beginner to specialist.</p>
                     <div id="growthTimelineContent"></div>
                 </div>
 
                 <div class="achievements-section reveal" id="achievementsSection" style="display:none;margin-top:24px;">
                     <h3>🏆 Developer Achievement Badges</h3>
-                    <p style="color:#666;margin-bottom:14px;">Milestones unlocked based on your repository history and open source impact:</p>
+                    <p class="section-desc" style="margin-bottom:14px;">Milestones unlocked based on your repository history and open source impact:</p>
                     <div class="achievements-grid" id="achievementsGrid"></div>
                 </div>
             </div>
@@ -532,14 +532,14 @@
             <!-- Achievements -->
                     <div class="language-section" id="recruiterSnapshotSection" style="display:none;margin-top:24px;">
                     <h3>📋 Recruiter Snapshot</h3>
-                    <p style="color:#666;margin-bottom:14px;">Key signals a recruiter sees in the first 30 seconds:</p>
+                    <p class="section-desc" style="margin-bottom:14px;">Key signals a recruiter sees in the first 30 seconds:</p>
                     <div id="recruiterSnapshotGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;"></div>
                 </div>
 
                 <!-- ===== NEW FEATURE D: GitHub Streak Tracker ===== -->
                     <div class="language-section" id="profileAdvisorSection" style="display:none;margin-top:24px;">
                     <h3>&#127919; Profile Completeness Advisor</h3>
-                    <p style="color:#666;margin-bottom:14px;">Step-by-step actions to maximize your GitHub profile for recruiters:</p>
+                    <p class="section-desc" style="margin-bottom:14px;">Step-by-step actions to maximize your GitHub profile for recruiters:</p>
                     <div id="profileAdvisorList" style="display:flex;flex-direction:column;gap:10px;"></div>
                     <div id="profileAdvisorScore" style="margin-top:16px;"></div>
                 </div>
@@ -547,14 +547,14 @@
                 <!-- ===== ENTERPRISE FEATURE 1: AI Project Quality Judge ===== -->
                     <div class="language-section" id="aiQualityJudgeSection" style="display:none;margin-top:24px;">
                     <h3>🤖 AI Project Quality Judge</h3>
-                    <p style="color:#666;margin-bottom:16px;">Deep AI analysis of your top repositories across 8 quality dimensions.</p>
+                    <p class="section-desc" style="margin-bottom:16px;">Deep AI analysis of your top repositories across 8 quality dimensions.</p>
                     <div id="aiQualityJudgeGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;"></div>
                 </div>
 
                 <!-- ===== ENTERPRISE FEATURE 2: Repository Deep Analysis ===== -->
                     <div class="language-section" id="portfolioStrengthSection" style="display:none;margin-top:24px;">
                     <h3>💪 Portfolio Strength Analyzer</h3>
-                    <p style="color:#666;margin-bottom:16px;">Category-based strength breakdown across all major development domains.</p>
+                    <p class="section-desc" style="margin-bottom:16px;">Category-based strength breakdown across all major development domains.</p>
                     <div id="portfolioStrengthGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;"></div>
                     <div id="portfolioStrengthInsights" style="margin-top:20px;"></div>
                 </div>
@@ -562,21 +562,21 @@
                 <!-- ===== ENTERPRISE FEATURE 5: Architecture Detection ===== -->
                     <div class="language-section" id="architectureDetectionSection" style="display:none;margin-top:24px;">
                     <h3>🏗️ Architecture Detection Engine</h3>
-                    <p style="color:#666;margin-bottom:16px;">Auto-detects architecture patterns across your repositories.</p>
+                    <p class="section-desc" style="margin-bottom:16px;">Auto-detects architecture patterns across your repositories.</p>
                     <div id="architectureDetectionContent"></div>
                 </div>
 
                 <!-- ===== ENTERPRISE FEATURE 6: Contribution Consistency ===== -->
                     <div class="language-section" id="openSourceReadinessSection" style="display:none;margin-top:24px;">
                     <h3>🌍 Open Source Readiness Score</h3>
-                    <p style="color:#666;margin-bottom:16px;">Evaluate how ready your repos are for open-source collaboration.</p>
+                    <p class="section-desc" style="margin-bottom:16px;">Evaluate how ready your repos are for open-source collaboration.</p>
                     <div id="openSourceReadinessGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;"></div>
                 </div>
 
                 <!-- ===== ENTERPRISE FEATURE 8: GitHub Growth Timeline ===== -->
                     <div class="language-section" id="professionalExportSection" style="display:none;margin-top:24px;">
                     <h3>📋 Professional Export Report</h3>
-                    <p style="color:#666;margin-bottom:16px;">Generate a complete enterprise-grade portfolio report.</p>
+                    <p class="section-desc" style="margin-bottom:16px;">Generate a complete enterprise-grade portfolio report.</p>
                     <div style="display:flex;gap:12px;flex-wrap:wrap;">
                         <button class="btn-analyze" onclick="exportProfessionalReport('html')" style="padding:12px 24px;">📄 Export Full HTML Report</button>
                         <button class="btn-secondary" onclick="exportProfessionalReport('print')" style="padding:12px 24px;">🖨️ Print Report</button>
@@ -625,7 +625,7 @@
             <!-- Share & Social -->
                     <div class="language-section skill-gap-section" id="skillGapSection" style="display:none;margin-top:24px;">
                     <h3>🎯 AI Skill Gap Detector</h3>
-                    <p style="color:#666;margin-bottom:14px;">Select your target role to get personalized recommendations:</p>
+                    <p class="section-desc" style="margin-bottom:14px;">Select your target role to get personalized recommendations:</p>
                     <div id="skillGapControls" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
                         <select id="skillGapRole" style="padding:10px 14px;border:2px solid var(--accent-teal);border-radius:8px;font-size:.95em;color:var(--text-dark);background:var(--bg-card);">
                             <option value="Frontend Dev">Frontend Developer</option>
