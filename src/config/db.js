@@ -141,7 +141,7 @@ function connectDB() {
   `);
 
   logger.info(`✅ SQLite connected: ${DB_PATH}`);
-  module.exports.getDb = getDb;
-};
+}
 
+module.exports = connectDB;
 module.exports.getDb = getDb;
