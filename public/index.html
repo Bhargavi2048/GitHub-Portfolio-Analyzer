@@ -1698,6 +1698,140 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* ─── ULTIMATE DARK MODE CONTRAST & VISIBILITY FIXES ─── */
+body.dark {
+    --text-dark: #e6edf3 !important;
+    --text-light: #ffffff !important;
+    --bg-light: #161b22 !important;
+    --bg-card: #0d1117 !important;
+    --border-color: #30363d !important;
+    --dark-teal: #76c7d1 !important;
+    background: linear-gradient(135deg, #020c14 0%, #0d1117 100%) !important;
+    color: #e6edf3 !important;
+}
+
+body.dark p, 
+body.dark span:not(.badge-val):not(.stat-num), 
+body.dark div:not(.score-circle):not(.score-value), 
+body.dark li, 
+body.dark td,
+body.dark th,
+body.dark label {
+    color: #c9d1d9;
+}
+
+body.dark h1, 
+body.dark h2, 
+body.dark h3, 
+body.dark h4, 
+body.dark strong {
+    color: #ffffff !important;
+}
+
+body.dark .input-card,
+body.dark .score-card,
+body.dark .profile-card,
+body.dark .details-section,
+body.dark .scoring-breakdown,
+body.dark .feedback-card,
+body.dark .language-section,
+body.dark .compare-card,
+body.dark .card,
+body.dark .stats-insight-card,
+body.dark .ai-insight-card,
+body.dark .recruiter-impression,
+body.dark .repo-item,
+body.dark .repo-card,
+body.dark .detail-item,
+body.dark .recommendation-item {
+    background: #0d1117 !important;
+    border-color: #30363d !important;
+    color: #e6edf3 !important;
+}
+
+body.dark .detail-label,
+body.dark .stat-label,
+body.dark .metric-name,
+body.dark .repo-desc,
+body.dark .bio,
+body.dark .interpretation,
+body.dark .subtitle,
+body.dark .tagline,
+body.dark .ai-label {
+    color: #8b949e !important;
+}
+
+body.dark .stat-value,
+body.dark .detail-value,
+body.dark .metric-value,
+body.dark .score-value,
+body.dark .repo-name,
+body.dark .language-name,
+body.dark .language-percent,
+body.dark .recommendation-title {
+    color: #ffffff !important;
+}
+
+body.dark .detail-item {
+    background: #161b22 !important;
+    border: 1px solid #30363d !important;
+}
+
+body.dark .recommendation-item,
+body.dark .repo-item {
+    background: #161b22 !important;
+    border: 1px solid #30363d !important;
+}
+
+body.dark .progress-bar {
+    background: #21262d !important;
+}
+
+/* Tabs in Dark Mode */
+body.dark .analysis-tabs-nav {
+    background: #0d1117 !important;
+    border-color: #30363d !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important;
+}
+
+body.dark .tab-btn {
+    background: #161b22 !important;
+    color: #76c7d1 !important;
+    border-color: #30363d !important;
+}
+
+body.dark .tab-btn:hover {
+    background: #21262d !important;
+    color: #ffffff !important;
+}
+
+body.dark .tab-btn.active {
+    background: linear-gradient(135deg, #0d7377 0%, #14919b 100%) !important;
+    color: #ffffff !important;
+    border-color: var(--accent-teal) !important;
+    box-shadow: 0 4px 12px rgba(13, 115, 119, 0.4) !important;
+}
+
+body.dark .recruiter-impression {
+    background: rgba(13, 115, 119, 0.15) !important;
+    border-left: 4px solid var(--accent-teal) !important;
+}
+
+body.dark #recruiterText {
+    color: #e6edf3 !important;
+}
+
+body.dark .skills-tags span,
+body.dark .skill-tag {
+    background: #161b22 !important;
+    color: #76c7d1 !important;
+    border: 1px solid #30363d !important;
+}
+
+body.dark .feedback-card.strengths { border-left-color: #2ea043 !important; }
+body.dark .feedback-card.improvements { border-left-color: #f85149 !important; }
+body.dark .feedback-card.recommendations { border-left-color: var(--accent-teal) !important; }
 </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
@@ -2806,7 +2940,12 @@ body.dark .onboard-tip { background: #0f2a30; color: #e8f1f3; }
 
             resultsSection.classList.remove('hidden');
             if (typeof switchAnalysisTab === 'function') switchAnalysisTab('overview');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => {
+        const target = document.getElementById('resultsSection');
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, 120);
         }
 
         function updateScoreDisplay(scoreId, progressId, value) {
@@ -5552,6 +5691,41 @@ function printAnalysis() {
     </div>
   </div>
 
+  
+  <!-- RECRUITER EXECUTIVE IMPRESSION -->
+  <div class="one-col card" style="background:#f0fdfa;border:1px solid #99f6e4;margin-bottom:20px;">
+    <div class="card-title" style="color:#0f766e;">👔 Recruiter First Impression</div>
+    <p style="font-size:13.5px;color:#134e4a;line-height:1.6;font-style:italic;">
+      ${document.getElementById('recruiterText')?.textContent || 'Strong engineering signals with consistent repository activity. Adding open-source licenses and pinned project demos will significantly improve ATS shortlisting.'}
+    </p>
+    <div style="margin-top:10px;font-size:12px;font-weight:700;color:#0f766e;">
+      Developer Level: <span style="background:#ccfbf1;padding:3px 10px;border-radius:12px;">${document.getElementById('devLevel')?.textContent || 'Rising Contributor'}</span>
+    </div>
+  </div>
+
+  <!-- ATS & CAREER READINESS CARD -->
+  <div class="two-col" style="margin-bottom:20px;">
+    <div class="card">
+      <div class="card-title" style="color:#0d7377;">📋 ATS & Profile Readiness</div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+        <div style="font-size:32px;font-weight:800;color:#0d7377;">${document.getElementById('completionPct')?.textContent || '72%'}</div>
+        <div style="font-size:12px;color:#555;">Profile Completeness & Recruiter Friendliness Index</div>
+      </div>
+      <ul style="padding-left:18px;font-size:12.5px;color:#444;line-height:1.6;">
+        <li>Documentation Coverage: ${a.scores?.documentation ? Math.round(a.scores.documentation * 100) : 100}%</li>
+        <li>Bio & Social Links: ${u.bio ? '✅ Provided' : '⚠️ Missing Bio'}</li>
+        <li>Original Repositories: ${(cd.repos||[]).filter(r=>!r.fork).length} projects</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:#0d7377;">🎯 Detected Technical Skills</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+        ${(Array.from(document.querySelectorAll('#topSkillsTags span')).map(s => s.outerHTML).join('') || Object.keys(langs||{}).slice(0,6).map(l => '<span style="background:#e8f4f5;color:#0d7377;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:600;">' + l + '</span>').join(''))}
+      </div>
+    </div>
+  </div>
+
   <!-- STATS -->
   <div class="stats-row">
     <div class="stat-box"><div class="stat-num">${(cd.repos||[]).filter(r=>!r.fork).length}</div><div class="stat-label">Repositories</div></div>
@@ -7312,7 +7486,7 @@ if (document.readyState === 'loading') {
 
 
 <script>
-function switchAnalysisTab(tabName) {
+function switchAnalysisTab(tabName, shouldScroll = true) {
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
@@ -7325,6 +7499,15 @@ function switchAnalysisTab(tabName) {
 
     if (history.replaceState) {
         history.replaceState(null, null, '#' + tabName);
+    }
+
+    // Scroll to the beginning of the tabs view
+    if (shouldScroll) {
+        const nav = document.querySelector('.analysis-tabs-nav');
+        if (nav) {
+            const navTop = nav.getBoundingClientRect().top + window.pageYOffset - 15;
+            window.scrollTo({ top: navTop, behavior: 'smooth' });
+        }
     }
 }
 
