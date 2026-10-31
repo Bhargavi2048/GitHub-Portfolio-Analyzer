@@ -1835,6 +1835,89 @@ body.dark .feedback-card.recommendations { border-left-color: var(--accent-teal)
 </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+
+/* ── Exhaustive Dark Mode Text Visibility & Contrast Fixes ── */
+body.dark {
+    background: #020c14 !important;
+    color: #e6edf3 !important;
+}
+body.dark p,
+body.dark span,
+body.dark div,
+body.dark li,
+body.dark td,
+body.dark th,
+body.dark label {
+    color: inherit;
+}
+body.dark [style*="color:#333"],
+body.dark [style*="color:#444"],
+body.dark [style*="color:#555"],
+body.dark [style*="color:#666"],
+body.dark [style*="color:#222"],
+body.dark [style*="color:#111"],
+body.dark [style*="color: #333"],
+body.dark [style*="color: #444"],
+body.dark [style*="color: #555"],
+body.dark [style*="color: #666"],
+body.dark [style*="color: #222"],
+body.dark [style*="color: #111"],
+body.dark [style*="color: #000"],
+body.dark [style*="color:#000"],
+body.dark [style*="color: black"],
+body.dark [style*="color:black"] {
+    color: #c9d1d9 !important;
+}
+body.dark [style*="color:#888"],
+body.dark [style*="color: #888"],
+body.dark [style*="color:#999"],
+body.dark [style*="color: #999"] {
+    color: #8b949e !important;
+}
+body.dark [style*="background:#fff"],
+body.dark [style*="background: #fff"],
+body.dark [style*="background:#ffffff"],
+body.dark [style*="background: #ffffff"],
+body.dark [style*="background:#f8f9fa"],
+body.dark [style*="background: #f8f9fa"],
+body.dark [style*="background:#f5f9fa"],
+body.dark [style*="background: #f5f9fa"],
+body.dark [style*="background:#f0f0f0"],
+body.dark [style*="background: #f0f0f0"],
+body.dark [style*="background:#fafbfc"] {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+    color: #e6edf3 !important;
+}
+body.dark .card,
+body.dark .detail-item,
+body.dark .stat-box,
+body.dark .feedback-card,
+body.dark .recommendation-item,
+body.dark .repo-item {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+    color: #e6edf3 !important;
+}
+body.dark .detail-label,
+body.dark .repo-desc,
+body.dark .recommendation-text,
+body.dark .ats-item,
+body.dark .stat-label {
+    color: #8b949e !important;
+}
+body.dark .detail-value,
+body.dark .repo-name,
+body.dark .recommendation-title,
+body.dark .card-title {
+    color: #e6edf3 !important;
+}
+body.dark .recommendation-title::before {
+    color: var(--accent-teal) !important;
+}
+
+</style>
 </head>
 <body>
 
@@ -2939,13 +3022,8 @@ body.dark .feedback-card.recommendations { border-left-color: var(--accent-teal)
                 .join('');
 
             resultsSection.classList.remove('hidden');
-            if (typeof switchAnalysisTab === 'function') switchAnalysisTab('overview');
-            setTimeout(() => {
-        const target = document.getElementById('resultsSection');
-        if (target) {
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }, 120);
+            if (typeof switchAnalysisTab === 'function') switchAnalysisTab('overview', false);
+            if (typeof scrollToResults === 'function') scrollToResults();
         }
 
         function updateScoreDisplay(scoreId, progressId, value) {
@@ -5583,7 +5661,10 @@ function printAnalysis() {
         </div>`).join('');
 
     // Strengths / improvements
-    const mkList = (arr, color) => (arr||[]).slice(0,5).map(s=>`<li style="margin-bottom:6px;font-size:13px;color:#333;line-height:1.5;padding-left:4px;">${s}</li>`).join('');
+    const mkList = (arr, color) => (arr||[]).slice(0,8).map(s=>{
+        const text = typeof s === 'string' ? s : (s.text || s.title || JSON.stringify(s));
+        return '<li style="margin-bottom:8px;font-size:13px;color:#222;line-height:1.5;padding-left:4px;display:flex;align-items:flex-start;gap:6px;"><span style="color:' + color + ';font-weight:bold;">•</span><span>' + text + '</span></li>';
+    }).join('');
 
     // Achievements if present
     const achSection = (() => {
@@ -5779,7 +5860,11 @@ function printAnalysis() {
   ${a.recommendations && a.recommendations.length ? `<div class="one-col card">
     <div class="card-title">💡 Recommendations</div>
     <ul style="padding:0;list-style:none;">
-      ${(a.recommendations||[]).slice(0,6).map((r,i)=>`<li style="display:flex;gap:10px;margin-bottom:8px;font-size:13px;color:#333;line-height:1.5;"><span style="background:#e8f4f5;color:#0d7377;font-weight:700;font-size:11px;border-radius:4px;padding:2px 7px;min-width:22px;text-align:center;height:fit-content;margin-top:1px;">${i+1}</span>${r}</li>`).join('')}
+      ${(a.recommendations||[]).slice(0,8).map((r,i)=>{
+      const title = typeof r === 'string' ? r : (r.title || 'Recommendation');
+      const desc = typeof r === 'object' && r.text ? '<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.5;">' + r.text + '</div>' : '';
+      return '<li style="display:flex;gap:10px;margin-bottom:12px;font-size:13px;color:#1a1a1a;line-height:1.5;"><span style="background:#e8f4f5;color:#0d7377;font-weight:700;font-size:11px;border-radius:4px;padding:2px 7px;min-width:22px;text-align:center;height:fit-content;margin-top:2px;">' + (i+1) + '</span><div><div style="font-weight:700;color:#0d7377;">' + title + '</div>' + desc + '</div></li>';
+    }).join('')}
     </ul>
   </div>` : ''}
 
@@ -7486,6 +7571,25 @@ if (document.readyState === 'loading') {
 
 
 <script>
+
+function scrollToResults() {
+    const el = document.getElementById('resultsSection');
+    if (!el) return;
+    el.classList.remove('hidden');
+    // Primary smooth scroll
+    setTimeout(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+    // Reinforce scroll position once dynamic sub-panels settle
+    setTimeout(() => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top > 250 || rect.top < -50) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, 450);
+}
+window.scrollToResults = scrollToResults;
+
 function switchAnalysisTab(tabName, shouldScroll = true) {
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -7501,17 +7605,18 @@ function switchAnalysisTab(tabName, shouldScroll = true) {
         history.replaceState(null, null, '#' + tabName);
     }
 
-    // Scroll to the beginning of the tabs view
+    // Always scroll smoothly to the beginning of the tabs navigation
     if (shouldScroll) {
-        const nav = document.querySelector('.analysis-tabs-nav');
-        if (nav) {
-            const navTop = nav.getBoundingClientRect().top + window.pageYOffset - 15;
-            window.scrollTo({ top: navTop, behavior: 'smooth' });
-        }
+        requestAnimationFrame(() => {
+            const nav = document.querySelector('.analysis-tabs-nav');
+            if (nav) {
+                nav.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
     }
 }
+window.switchAnalysisTab = switchAnalysisTab;
 
-// Listen for hash change / deep links
 window.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash.replace('#', '');
     if (hash && document.getElementById('tab-' + hash)) {

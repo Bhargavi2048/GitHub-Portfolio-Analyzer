@@ -137,7 +137,7 @@
             ${dimensions.map(d => `
               <div>
                 <div style="display:flex;justify-content:space-between;font-size:.8em;">
-                  <span style="color:#666;">${d.icon} ${d.label}</span>
+                  <span style="color:var(--ent-text-muted,#8b949e);">${d.icon} ${d.label}</span>
                   <span style="font-weight:700;color:${scoreColor(scores[d.key]*10)};">${scores[d.key]}/10</span>
                 </div>
                 ${miniBar(scores[d.key] * 10)}
@@ -145,7 +145,7 @@
             `).join('')}
           </div>
 
-          <div style="background:rgba(13,115,119,.06);border-left:3px solid var(--accent-teal);padding:10px 12px;border-radius:0 8px 8px 0;font-size:.82em;color:#555;">
+          <div style="background:rgba(13,115,119,.06);border-left:3px solid var(--accent-teal);padding:10px 12px;border-radius:0 8px 8px 0;font-size:.82em;color:var(--ent-text-secondary,#c9d1d9);">
             <div style="font-weight:700;color:var(--primary-teal);margin-bottom:6px;">🤖 AI Suggestions</div>
             <ul style="list-style:none;padding:0;margin:0;">
               ${feedbacks.slice(0, 3).map(f => `<li style="padding:2px 0;">• ${f}</li>`).join('')}
@@ -238,17 +238,17 @@
               ${audit.strengths.length ? `
                 <div style="margin-top:12px;">
                   <div style="font-size:.78em;font-weight:700;color:var(--success);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;">✅ Strengths</div>
-                  ${audit.strengths.slice(0, 3).map(s => `<div style="font-size:.82em;color:#444;padding:2px 0;border-bottom:1px solid #f0f0f0;">• ${s}</div>`).join('')}
+                  ${audit.strengths.slice(0, 3).map(s => `<div style="font-size:.82em;color:var(--ent-text-secondary,#c9d1d9);padding:2px 0;border-bottom:1px solid #f0f0f0;">• ${s}</div>`).join('')}
                 </div>` : ''}
               ${audit.weaknesses.length ? `
                 <div style="margin-top:10px;">
                   <div style="font-size:.78em;font-weight:700;color:var(--error);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;">⚠️ Weaknesses</div>
-                  ${audit.weaknesses.slice(0, 2).map(w => `<div style="font-size:.82em;color:#444;padding:2px 0;border-bottom:1px solid #f0f0f0;">• ${w}</div>`).join('')}
+                  ${audit.weaknesses.slice(0, 2).map(w => `<div style="font-size:.82em;color:var(--ent-text-secondary,#c9d1d9);padding:2px 0;border-bottom:1px solid #f0f0f0;">• ${w}</div>`).join('')}
                 </div>` : ''}
               ${audit.suggestions.length ? `
                 <div style="margin-top:10px;background:rgba(13,115,119,.06);border-radius:8px;padding:10px;">
                   <div style="font-size:.78em;font-weight:700;color:var(--primary-teal);margin-bottom:5px;">💡 Suggestions</div>
-                  ${audit.suggestions.slice(0, 2).map(s => `<div style="font-size:.8em;color:#555;padding:2px 0;">→ ${s}</div>`).join('')}
+                  ${audit.suggestions.slice(0, 2).map(s => `<div style="font-size:.8em;color:var(--ent-text-secondary,#c9d1d9);padding:2px 0;">→ ${s}</div>`).join('')}
                 </div>` : ''}
             </div>
           `;
@@ -357,7 +357,7 @@
             <div style="margin-top:12px;background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.3);border-radius:8px;padding:10px;">
               <div style="font-size:.78em;font-weight:700;color:#b8860b;margin-bottom:5px;">📌 Add These Sections</div>
               ${analysis.missing.slice(0, 4).map(s =>
-                `<div style="font-size:.8em;color:#555;padding:2px 0;">${s.icon} ${s.label} (+${s.weight} pts)</div>`
+                `<div style="font-size:.8em;color:var(--ent-text-secondary,#c9d1d9);padding:2px 0;">${s.icon} ${s.label} (+${s.weight} pts)</div>`
               ).join('')}
             </div>` : `
             <div style="margin-top:12px;background:rgba(40,167,69,.08);border-radius:8px;padding:8px 12px;font-size:.82em;color:var(--success);font-weight:600;">
@@ -486,7 +486,7 @@
         </div>
         <div style="margin-top:14px;background:rgba(13,115,119,.06);border-left:4px solid var(--primary-teal);border-radius:0 10px 10px 0;padding:14px 16px;">
           <div style="font-weight:700;color:var(--primary-teal);margin-bottom:6px;">🎯 Skill Distribution Insight</div>
-          <p style="font-size:.88em;color:#555;line-height:1.6;margin:0;">
+          <p style="font-size:.88em;color:var(--ent-text-secondary,#c9d1d9);line-height:1.6;margin:0;">
             Your strongest domain is <strong>${topStrengths[0].icon} ${topStrengths[0].name}</strong> at ${topStrengths[0].score}%.
             Consider investing time in <strong>${improvements[0].icon} ${improvements[0].name}</strong> to become a more well-rounded developer.
             ${topStrengths[0].score >= 70 ? 'You show clear specialization — excellent for targeted job applications.' : 'Building broader skills will increase your versatility to employers.'}
@@ -596,18 +596,18 @@
                   ${arch.icon} ${arch.type}
                 </span>
               </div>
-              <p style="font-size:.82em;color:#666;line-height:1.5;margin-bottom:10px;">${arch.desc}</p>
+              <p style="font-size:.82em;color:var(--ent-text-muted,#8b949e);line-height:1.5;margin-bottom:10px;">${arch.desc}</p>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
                 <div>
                   <div style="font-size:.75em;font-weight:700;color:var(--success);margin-bottom:4px;">✅ Strengths</div>
                   ${arch.strengths.slice(0, 2).map(s =>
-                    `<div style="font-size:.78em;color:#444;padding:2px 0;">• ${s}</div>`
+                    `<div style="font-size:.78em;color:var(--ent-text-secondary,#c9d1d9);padding:2px 0;">• ${s}</div>`
                   ).join('')}
                 </div>
                 <div>
                   <div style="font-size:.75em;font-weight:700;color:var(--error);margin-bottom:4px;">⚠️ Watch Out</div>
                   ${arch.weaknesses.slice(0, 2).map(w =>
-                    `<div style="font-size:.78em;color:#444;padding:2px 0;">• ${w}</div>`
+                    `<div style="font-size:.78em;color:var(--ent-text-secondary,#c9d1d9);padding:2px 0;">• ${w}</div>`
                   ).join('')}
                 </div>
               </div>
@@ -707,9 +707,9 @@
 
       <div style="background:rgba(13,115,119,.06);border-left:4px solid var(--primary-teal);border-radius:0 10px 10px 0;padding:14px 16px;">
         <div style="font-weight:700;color:var(--primary-teal);margin-bottom:6px;">🤖 AI Productivity Insight</div>
-        <p style="font-size:.88em;color:#555;line-height:1.6;margin:0;">${consistencyFeedback}</p>
+        <p style="font-size:.88em;color:var(--ent-text-secondary,#c9d1d9);line-height:1.6;margin:0;">${consistencyFeedback}</p>
         ${consistencyScore < 70 ? `
-          <ul style="margin:10px 0 0 16px;font-size:.84em;color:#555;line-height:1.8;">
+          <ul style="margin:10px 0 0 16px;font-size:.84em;color:var(--ent-text-secondary,#c9d1d9);line-height:1.8;">
             <li>Set a daily reminder to commit at least one meaningful change</li>
             <li>Use GitHub streaks as motivation to build a habit</li>
             <li>Even documentation updates count as valuable contributions</li>
@@ -856,7 +856,7 @@
                     ${phase.repos.length} repo${phase.repos.length !== 1 ? 's' : ''}
                   </span>
                 </div>
-                <p style="font-size:.84em;color:#666;line-height:1.5;margin-bottom:10px;">${phaseObservations[i]}</p>
+                <p style="font-size:.84em;color:var(--ent-text-muted,#8b949e);line-height:1.5;margin-bottom:10px;">${phaseObservations[i]}</p>
                 ${phase.repos.length ? `
                   <div style="display:flex;flex-wrap:wrap;gap:5px;">
                     ${phase.repos.slice(0, 5).map(r =>
@@ -875,7 +875,7 @@
 
       <div style="background:rgba(13,115,119,.06);border-left:4px solid var(--primary-teal);border-radius:0 12px 12px 0;padding:16px 20px;margin-top:8px;">
         <div style="font-weight:700;color:var(--primary-teal);margin-bottom:8px;">🤖 AI Growth Observation</div>
-        <p style="font-size:.88em;color:#555;line-height:1.6;margin:0;">
+        <p style="font-size:.88em;color:var(--ent-text-secondary,#c9d1d9);line-height:1.6;margin:0;">
           You've been on GitHub for approximately <strong>${yearsOnGitHub} year${yearsOnGitHub !== 1 ? 's' : ''}</strong> and have built
           <strong>${ownRepos.length} original project${ownRepos.length !== 1 ? 's' : ''}</strong>.
           ${topLangs.length ? `Your primary focus appears to be <strong>${topLangs[0]}</strong>${topLangs[1] ? ` and <strong>${topLangs[1]}</strong>` : ''}.` : ''}
@@ -987,7 +987,7 @@
   .score-box .val{font-size:2em;font-weight:800;color:#0d7377;line-height:1;}
   .score-box .lbl{font-size:.75em;color:#888;margin-top:4px;}
   .metric-row{display:flex;justify-content:space-between;font-size:.88em;padding:4px 0;}
-  .metric-row .name{color:#555;}
+  .metric-row .name{color:var(--ent-text-secondary,#c9d1d9);}
   .metric-row .val{font-weight:700;color:#0d7377;}
   table{width:100%;border-collapse:collapse;font-size:.84em;}
   th{background:#0d7377;color:#fff;padding:9px 12px;text-align:left;}
@@ -1098,7 +1098,7 @@
     ${(a.recommendations || []).map((rec, i) => `
       <div style="background:#f9fdfd;border-left:4px solid #0d7377;border-radius:0 10px 10px 0;padding:14px 16px;margin-bottom:10px;">
         <div style="font-weight:700;color:#0d7377;margin-bottom:4px;">${rec.title || `Recommendation ${i+1}`}</div>
-        <div style="font-size:.88em;color:#555;line-height:1.6;">${rec.description || rec}</div>
+        <div style="font-size:.88em;color:var(--ent-text-secondary,#c9d1d9);line-height:1.6;">${rec.description || rec}</div>
       </div>`).join('')}
   </div>
 
@@ -1136,7 +1136,7 @@
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;">
             ${['GitHub Profile Summary','Repository Analysis','Score Breakdown','Language Distribution',
                'Strengths & Weaknesses','AI Recommendations','Open Source Status','Growth Insights'].map(item =>
-              `<div style="display:flex;align-items:center;gap:6px;font-size:.85em;color:#444;">
+              `<div style="display:flex;align-items:center;gap:6px;font-size:.85em;color:var(--ent-text-secondary,#c9d1d9);">
                 <span style="color:var(--success);">✓</span> ${item}
               </div>`).join('')}
           </div>

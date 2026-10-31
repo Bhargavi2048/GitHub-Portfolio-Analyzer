@@ -99,10 +99,24 @@ app.get("/leaderboard", (_req, res) =>
   res.sendFile(path.join(__dirname, "..", "public", "leaderboard.html"))
 );
 
-app.use(express.static(path.join(__dirname, "..", "public"), { maxAge: "1h", etag: true }));
-app.get("*", (_req, res) =>
-  res.sendFile(path.join(__dirname, "..", "public", "index.html"))
-);
+app.use(express.static(path.join(__dirname, "..", "public"), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith(".html")) {
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+    } else {
+      res.setHeader("Cache-Control", "public, max-age=600");
+    }
+  },
+  etag: true,
+}));
+app.get("*", (_req, res) => {
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.sendFile(path.join(__dirname, "..", "public", "index.html"));
+});
 
 app.use(errorHandler);
 
