@@ -2337,3 +2337,254 @@ body.dark .share-btn:hover {
     border-color: #1f6feb !important;
     color: #ffffff !important;
 }
+
+
+
+/* ─── Modern Navbar Polish ─── */
+.top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 24px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(13, 115, 119, 0.15);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+body.dark .top-bar {
+    background: rgba(13, 17, 23, 0.95) !important;
+    border-bottom: 1px solid #30363d !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+}
+.top-bar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--primary-teal, #0d7377);
+    font-size: 1.05em;
+}
+body.dark .top-bar-brand {
+    color: var(--accent-teal, #76c7d1) !important;
+}
+.top-bar-center {
+    display: flex;
+    align-items: center;
+}
+.rate-limit-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.82em;
+    font-weight: 600;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    transition: all 0.2s ease;
+}
+body.dark .rate-limit-badge {
+    background: #0d2818 !important;
+    border-color: #238636 !important;
+    color: #4ade80 !important;
+}
+.rate-limit-badge.warning {
+    background: #fffbeb !important;
+    border-color: #fde68a !important;
+    color: #92400e !important;
+}
+body.dark .rate-limit-badge.warning {
+    background: #451a03 !important;
+    border-color: #b45309 !important;
+    color: #fcd34d !important;
+}
+.rate-limit-badge.danger {
+    background: #fef2f2 !important;
+    border-color: #fecaca !important;
+    color: #991b1b !important;
+}
+body.dark .rate-limit-badge.danger {
+    background: #450a0a !important;
+    border-color: #dc2626 !important;
+    color: #f87171 !important;
+}
+.rate-indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+}
+.rate-limit-badge.warning .rate-indicator-dot {
+    background: #f59e0b;
+}
+.rate-limit-badge.danger .rate-indicator-dot {
+    background: #ef4444;
+}
+.top-bar-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* ─── Resume Drag & Drop Matcher ─── */
+.resume-matcher-card {
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--border-color, #e1e4e8);
+    border-radius: 14px;
+    padding: 24px;
+    margin: 24px 0;
+    box-shadow: 0 4px 16px rgba(13, 115, 119, 0.08);
+}
+body.dark .resume-matcher-card {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+}
+.resume-matcher-header h3 {
+    margin: 0 0 6px 0;
+    font-size: 1.25em;
+    color: var(--primary-teal, #0d7377);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+body.dark .resume-matcher-header h3 {
+    color: var(--accent-teal, #76c7d1) !important;
+}
+.resume-matcher-sub {
+    margin: 0 0 18px 0;
+    font-size: 0.9em;
+    color: #666;
+}
+body.dark .resume-matcher-sub {
+    color: #8b949e !important;
+}
+.resume-dropzone {
+    border: 2px dashed var(--accent-teal, #76c7d1);
+    border-radius: 12px;
+    padding: 32px 20px;
+    text-align: center;
+    background: #f8fbfb;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+body.dark .resume-dropzone {
+    background: #0d1117 !important;
+    border-color: #388bfd !important;
+}
+.resume-dropzone:hover, .resume-dropzone.dragover {
+    background: #eef8f8;
+    border-color: var(--primary-teal, #0d7377);
+    transform: scale(1.01);
+}
+body.dark .resume-dropzone:hover, body.dark .resume-dropzone.dragover {
+    background: #161b22 !important;
+}
+.dropzone-icon {
+    font-size: 2.4em;
+    margin-bottom: 8px;
+}
+.dropzone-text {
+    font-size: 1em;
+    color: #1a1a1a;
+    margin-bottom: 6px;
+}
+body.dark .dropzone-text {
+    color: #f0f6fc !important;
+}
+.dropzone-hint {
+    font-size: 0.82em;
+    color: #888;
+}
+body.dark .dropzone-hint {
+    color: #8b949e !important;
+}
+.resume-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+.resume-metric-card {
+    background: #f8fbfb;
+    border: 1px solid #dde8ea;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+}
+body.dark .resume-metric-card {
+    background: #0d1117 !important;
+    border-color: #30363d !important;
+}
+.resume-metric-val {
+    font-size: 2.2em;
+    font-weight: 800;
+    color: var(--primary-teal, #0d7377);
+    line-height: 1;
+    margin-bottom: 4px;
+}
+body.dark .resume-metric-val {
+    color: var(--accent-teal, #76c7d1) !important;
+}
+.resume-metric-lbl {
+    font-size: 0.82em;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+body.dark .resume-metric-lbl {
+    color: #8b949e !important;
+}
+.skill-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 0.82em;
+    font-weight: 600;
+    margin: 3px;
+}
+.skill-pill.match {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #86efac;
+}
+body.dark .skill-pill.match {
+    background: #0d2818 !important;
+    color: #4ade80 !important;
+    border-color: #238636 !important;
+}
+.skill-pill.resume-only {
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #7dd3fc;
+}
+body.dark .skill-pill.resume-only {
+    background: #082f49 !important;
+    color: #38bdf8 !important;
+    border-color: #0284c7 !important;
+}
+
+/* ─── Official GitHub Language Badges ─── */
+.lang-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+body.dark .lang-badge {
+    color: #e6edf3 !important;
+}
+.lang-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}

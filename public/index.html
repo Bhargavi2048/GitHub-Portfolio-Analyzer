@@ -18,11 +18,23 @@
 </head>
 <body>
 
-    <div class="top-bar">
-        <button class="icon-btn" onclick="toggleDark()" id="darkBtn">🌙 Dark</button>
-        <button class="icon-btn" id="printBtn" onclick="printAnalysis()" title="Download the current analysis as an HTML file">🖨️ Print / Save HTML</button>
-        <button class="icon-btn" id="compareBtn" onclick="document.getElementById('compareSection').scrollIntoView({behavior:'smooth'})">⚖️ Compare</button>
-    </div>
+    <header class="top-bar">
+        <div class="top-bar-brand">
+            <span class="brand-logo">🚀</span>
+            <span class="brand-name">GitHub Portfolio Analyzer</span>
+        </div>
+        <div class="top-bar-center">
+            <div id="rateLimitBadge" class="rate-limit-badge" title="GitHub API unauthenticated request allowance">
+                <span class="rate-indicator-dot"></span>
+                <span id="rateLimitText">Checking rate limit…</span>
+            </div>
+        </div>
+        <div class="top-bar-actions">
+            <button class="icon-btn" onclick="toggleDark()" id="darkBtn" aria-label="Toggle dark mode">🌙 Dark</button>
+            <button class="icon-btn" id="printBtn" onclick="printAnalysis()" title="Download the current analysis as an HTML file" aria-label="Print or download report">🖨️ Print / Save HTML</button>
+            <button class="icon-btn" id="compareBtn" onclick="scrollToCompare()" aria-label="Compare with another developer">⚖️ Compare</button>
+        </div>
+    </header>
 
     <div class="container">
         <header class="header">
@@ -452,6 +464,13 @@
                     <div id="growthTimelineContent"></div>
                 </div>
 
+                <div class="achievements-section reveal" id="achievementsSection" style="display:none;margin-top:24px;">
+                    <h3>🏆 Developer Achievement Badges</h3>
+                    <p style="color:#666;margin-bottom:14px;">Milestones unlocked based on your repository history and open source impact:</p>
+                    <div class="achievements-grid" id="achievementsGrid"></div>
+                </div>
+            </div>
+
                 <!-- ===== ENTERPRISE FEATURE 9: Professional Export Report ===== -->
                 </div>
 
@@ -545,6 +564,30 @@
                 </div>
             </div>
 
+                    <!-- ===== 📄 Interactive Resume PDF Matcher ===== -->
+                    <div class="resume-matcher-card" id="resumeMatcherCard">
+                        <div class="resume-matcher-header">
+                            <h3>📄 Resume ATS Matcher &amp; Skill Extractor</h3>
+                            <p class="resume-matcher-sub">Upload your resume (PDF) to compare your declared skills against your verified GitHub repositories.</p>
+                        </div>
+
+                        <div class="resume-dropzone" id="resumeDropzone" onclick="document.getElementById('resumeFileInput').click()">
+                            <input type="file" id="resumeFileInput" accept=".pdf" style="display:none;" onchange="handleResumeFile(this.files[0])">
+                            <div class="dropzone-icon">📤</div>
+                            <div class="dropzone-text">
+                                <strong>Click to upload</strong> or drag &amp; drop your resume PDF here
+                            </div>
+                            <div class="dropzone-hint">PDF format up to 5MB • Instant ATS score &amp; GitHub skill alignment</div>
+                        </div>
+
+                        <div id="resumeAnalysisLoading" style="display:none;text-align:center;padding:24px;">
+                            <div class="spinner" style="margin:0 auto 12px;"></div>
+                            <p style="color:var(--primary-teal);font-weight:600;">Parsing resume and cross-referencing GitHub repositories…</p>
+                        </div>
+
+                        <div id="resumeResultBox" style="display:none;margin-top:20px;"></div>
+                    </div>
+
             <!-- Share & Social -->
                     <div class="language-section skill-gap-section" id="skillGapSection" style="display:none;margin-top:24px;">
                     <h3>🎯 AI Skill Gap Detector</h3>
@@ -573,10 +616,7 @@
                 </div>
 
                 <!-- ===== NEW FEATURE A: Repo Health Checker ===== -->
-                    <div class="achievements-section reveal" id="achievementsSection" style="display:none;">
-                <h3>🏆 Achievement Badges</h3>
-                <div class="achievements-grid" id="achievementsGrid"></div>
-            </div>
+                    
 
             <!-- Charts -->
                 </div>

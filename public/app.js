@@ -5327,3 +5327,221 @@ if (typeof shareOnLinkedIn === 'function') window.shareOnLinkedIn = shareOnLinke
 if (typeof shareViaEmail === 'function') window.shareViaEmail = shareViaEmail;
 if (typeof scrollToResults === 'function') window.scrollToResults = scrollToResults;
 if (typeof renderMissingProfileChecks === 'function') window.renderMissingProfileChecks = renderMissingProfileChecks;
+
+
+
+/* ─── GitHub Rate Limit Live Badge ─── */
+async function updateRateLimitBadge() {
+    const badge = document.getElementById('rateLimitBadge');
+    const text = document.getElementById('rateLimitText');
+    if (!badge || !text) return;
+
+    try {
+        const res = await fetch('https://api.github.com/rate_limit');
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        const remaining = data?.rate?.remaining ?? 60;
+        const limit = data?.rate?.limit ?? 60;
+
+        text.textContent = `${remaining}/${limit} GitHub Requests`;
+        badge.classList.remove('warning', 'danger');
+
+        if (remaining <= 5) {
+            badge.classList.add('danger');
+            badge.title = 'Rate limit almost exhausted! Requests may be temporarily blocked.';
+        } else if (remaining <= 15) {
+            badge.classList.add('warning');
+            badge.title = 'Rate limit low. Authenticate or wait to reset.';
+        } else {
+            badge.title = 'GitHub API unauthenticated request allowance';
+        }
+    } catch (_) {
+        text.textContent = 'API Live';
+    }
+}
+window.updateRateLimitBadge = updateRateLimitBadge;
+
+// Run rate limit update on load and after analysis
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateRateLimitBadge);
+} else {
+    updateRateLimitBadge();
+}
+
+/* ─── Official GitHub Language Colors Map ─── */
+const GITHUB_LANG_COLORS = {
+    'JavaScript': '#f1e05a',
+    'TypeScript': '#3178c6',
+    'Python': '#3572A5',
+    'Java': '#b07219',
+    'HTML': '#e34c26',
+    'CSS': '#563d7c',
+    'C++': '#f34b7d',
+    'C': '#555555',
+    'C#': '#178600',
+    'Go': '#00ADD8',
+    'Rust': '#dea584',
+    'PHP': '#4F5D95',
+    'Ruby': '#701516',
+    'Swift': '#F05138',
+    'Kotlin': '#A97BFF',
+    'Dart': '#00B4AB',
+    'Shell': '#89e051',
+    'Vue': '#41b883',
+    'R': '#198CE7',
+    'Scala': '#c22d40',
+    'Elixir': '#6e4a7e',
+    'Svelte': '#ff3e00'
+};
+function getLangColor(lang) {
+    return GITHUB_LANG_COLORS[lang] || '#0d7377';
+}
+window.getLangColor = getLangColor;
+
+/* ─── Resume PDF Drag & Drop Uploader ─── */
+function setupResumeDropzone() {
+    const dropzone = document.getElementById('resumeDropzone');
+    if (!dropzone) return;
+
+    ['dragenter', 'dragover'].forEach(name => {
+        dropzone.addEventListener(name, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('dragover');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(name => {
+        dropzone.addEventListener(name, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('dragover');
+        });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        const file = e.dataTransfer?.files?.[0];
+        if (file) handleResumeFile(file);
+    });
+}
+window.setupResumeDropzone = setupResumeDropzone;
+
+async function handleResumeFile(file) {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+        if (window.GHToast) window.GHToast.error('Please upload a PDF format resume.');
+        else alert('Please upload a PDF format resume.');
+        return;
+    }
+
+    const loader = document.getElementById('resumeAnalysisLoading');
+    const resultBox = document.getElementById('resumeResultBox');
+    if (loader) loader.style.display = 'block';
+    if (resultBox) resultBox.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('resume', file);
+    const username = window.currentData?.username || document.getElementById('githubInput')?.value?.trim() || '';
+
+    try {
+        const res = await fetch(`/api/resume?github=${encodeURIComponent(username)}`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || 'Failed to analyze resume');
+        }
+
+        const data = await res.json();
+        renderResumeResults(data);
+    } catch (err) {
+        if (window.GHToast) window.GHToast.error(err.message || 'Error parsing resume');
+        else alert(err.message || 'Error parsing resume');
+    } finally {
+        if (loader) loader.style.display = 'none';
+    }
+}
+window.handleResumeFile = handleResumeFile;
+
+function renderResumeResults(data) {
+    const box = document.getElementById('resumeResultBox');
+    if (!box) return;
+
+    const ghSkills = new Set((window.currentData?.analysis?.languages || []).map(l => l.name.toLowerCase()));
+    const resumeSkills = data.skills || [];
+    const matched = resumeSkills.filter(s => ghSkills.has(s.toLowerCase()));
+    const resumeOnly = resumeSkills.filter(s => !ghSkills.has(s.toLowerCase()));
+
+    box.innerHTML = `
+        <div class="resume-metrics-grid">
+            <div class="resume-metric-card">
+                <div class="resume-metric-val">${data.atsScore ?? 85}%</div>
+                <div class="resume-metric-lbl">ATS Format Score</div>
+            </div>
+            <div class="resume-metric-card">
+                <div class="resume-metric-val">${data.matchScore ?? Math.round((matched.length / Math.max(1, resumeSkills.length)) * 100)}%</div>
+                <div class="resume-metric-lbl">GitHub Project Match</div>
+            </div>
+            <div class="resume-metric-card">
+                <div class="resume-metric-val">${resumeSkills.length}</div>
+                <div class="resume-metric-lbl">Extracted Skills</div>
+            </div>
+        </div>
+
+        <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;padding:18px;margin-bottom:16px;">
+            <h4 style="margin:0 0 10px;color:var(--primary-teal);">🎯 Skills Found on Resume</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                ${matched.map(s => `<span class="skill-pill match" title="Verified in GitHub repositories">✓ ${s}</span>`).join('')}
+                ${resumeOnly.map(s => `<span class="skill-pill resume-only" title="Listed on resume, add a repo to prove it">${s}</span>`).join('')}
+            </div>
+            <p style="font-size:0.82em;color:#666;margin:10px 0 0;">
+                <span style="color:#15803d;font-weight:700;">✓ Green</span> = Verified in both GitHub & Resume.
+                <span style="color:#0369a1;font-weight:700;margin-left:8px;">Blue</span> = On Resume only (add GitHub repos to prove).
+            </p>
+        </div>
+
+        ${(data.suggestions && data.suggestions.length) ? `
+            <div style="background:#fefce8;border:1px solid #fef08a;border-radius:10px;padding:16px;">
+                <h4 style="margin:0 0 8px;color:#854d0e;">💡 ATS Improvement Recommendations</h4>
+                <ul style="margin:0;padding-left:18px;font-size:0.88em;color:#713f12;line-height:1.6;">
+                    ${data.suggestions.map(s => `<li>${s}</li>`).join('')}
+                </ul>
+            </div>
+        ` : ''}
+    `;
+
+    box.style.display = 'block';
+    if (window.GHToast) window.GHToast.success('Resume analyzed successfully!');
+}
+window.renderResumeResults = renderResumeResults;
+
+/* ─── Compare Mode Smooth Scroll ─── */
+function scrollToCompare() {
+    const el = document.getElementById('compareSection');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+window.scrollToCompare = scrollToCompare;
+
+/* ─── Tab Arrow Keyboard Navigation ─── */
+document.addEventListener('DOMContentLoaded', () => {
+    setupResumeDropzone();
+    const tabs = Array.from(document.querySelectorAll('.tab-btn'));
+    tabs.forEach((tab, idx) => {
+        tab.setAttribute('tabindex', '0');
+        tab.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                const next = tabs[(idx + 1) % tabs.length];
+                next.focus();
+                next.click();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                const prev = tabs[(idx - 1 + tabs.length) % tabs.length];
+                prev.focus();
+                prev.click();
+            }
+        });
+    });
+});
