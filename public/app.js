@@ -6010,7 +6010,7 @@ function exportPDF() {
 }
 window.exportPDF = exportPDF;
 
-/* ─── Profile QR Code Generation & Modal ─── */
+/* ─── Profile QR Code Generation in Action Buttons Bar ─── */
 function generateQR() {
     const cd = window.currentData;
     const username = cd?.username || cd?.userData?.login || document.getElementById('githubInput')?.value?.trim();
@@ -6019,24 +6019,31 @@ function generateQR() {
         return;
     }
     const url = `${location.origin}${location.pathname}?u=${encodeURIComponent(username)}`;
-    const modal = document.getElementById('qrCodeModal');
+    const section = document.getElementById('embeddedQrSection');
     const container = document.getElementById('qrModalImageContainer');
     const linkBox = document.getElementById('qrModalLinkBox');
-    if (!modal || !container || !linkBox) return;
+    if (!section || !container || !linkBox) return;
 
     linkBox.textContent = url;
-    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(url)}`;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
     container.innerHTML = `<img src="${qrApiUrl}" alt="Portfolio QR Code for @${username}" id="activeQrImage" style="display:block;margin:0 auto;border-radius:8px;">`;
-    modal.style.display = 'flex';
-    showToast('📱 Portfolio QR Code generated!', 'success');
+
+    if (section.style.display === 'none' || !section.style.display) {
+        section.style.display = 'block';
+        section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        showToast('📱 Portfolio QR Code generated below!', 'success');
+    } else {
+        section.style.display = 'none';
+    }
 }
 window.generateQR = generateQR;
 
-function closeQRCodeModal() {
-    const modal = document.getElementById('qrCodeModal');
-    if (modal) modal.style.display = 'none';
+function closeQRCode() {
+    const section = document.getElementById('embeddedQrSection');
+    if (section) section.style.display = 'none';
 }
-window.closeQRCodeModal = closeQRCodeModal;
+window.closeQRCode = closeQRCode;
+window.closeQRCodeModal = closeQRCode;
 
 function downloadQRCodeImage() {
     const img = document.getElementById('activeQrImage');

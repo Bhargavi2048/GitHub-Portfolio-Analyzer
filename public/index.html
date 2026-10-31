@@ -666,6 +666,25 @@
                         <button class="btn-secondary" id="exportPdfBtnNew" onclick="exportPDF()">📄 Export PDF</button>
                         <button class="btn-secondary" id="generateQrBtnNew" onclick="generateQR()">📱 Generate QR Code</button>
                     </div>
+
+                    <!-- Embedded QR Code Section (Appears right here below the buttons on demand) -->
+                    <div class="embedded-qr-section" id="embeddedQrSection" style="display:none;margin-top:22px;">
+                        <div class="embedded-qr-box">
+                            <div class="qr-modal-header" style="justify-content:center;position:relative;">
+                                <h4>📱 Portfolio QR Code</h4>
+                                <button class="qr-close-btn" style="position:absolute;right:0;" onclick="closeQRCode()">✕</button>
+                            </div>
+                            <p class="qr-modal-desc">Scan to view this verified GitHub Portfolio Analyzer profile on any mobile device:</p>
+                            <div class="qr-image-container" id="qrModalImageContainer">
+                                <div class="spinner" style="margin:20px auto;"></div>
+                            </div>
+                            <div class="qr-link-box" id="qrModalLinkBox"></div>
+                            <div class="qr-modal-actions">
+                                <button class="btn-analyze" onclick="downloadQRCodeImage()">⬇️ Download QR Code</button>
+                                <button class="btn-secondary" onclick="copyShareLink()">📋 Copy Profile URL</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </section>
@@ -846,25 +865,6 @@
                 <span class="kbd-pill"><kbd>/</kbd> Focus search</span>
                 <span class="kbd-pill"><kbd>Ctrl+P</kbd> Print / PDF</span>
                 <span class="kbd-pill"><kbd>?</kbd> Toggle help</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- QR Code Modal -->
-    <div class="qr-modal-overlay" id="qrCodeModal" style="display:none;" onclick="if(event.target===this)closeQRCodeModal()">
-        <div class="qr-modal-card">
-            <div class="qr-modal-header">
-                <h3>📱 Portfolio QR Code</h3>
-                <button class="qr-close-btn" onclick="closeQRCodeModal()">✕</button>
-            </div>
-            <p class="qr-modal-desc">Scan to view this verified GitHub Portfolio Analyzer profile on any mobile device:</p>
-            <div class="qr-image-container" id="qrModalImageContainer">
-                <div class="spinner" style="margin:20px auto;"></div>
-            </div>
-            <div class="qr-link-box" id="qrModalLinkBox"></div>
-            <div class="qr-modal-actions">
-                <button class="btn-analyze" onclick="downloadQRCodeImage()">⬇️ Download QR Code</button>
-                <button class="btn-secondary" onclick="copyShareLink()">📋 Copy Profile URL</button>
             </div>
         </div>
     </div>

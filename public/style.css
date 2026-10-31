@@ -3329,7 +3329,35 @@ body.dark .kbd-pill kbd {
     color: #f1f5f9 !important;
 }
 
-/* ─── QR Code Modal Overlay ─── */
+/* ─── Embedded QR Code in Global Actions Bar ─── */
+.embedded-qr-section {
+    animation: fadeInDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.embedded-qr-box {
+    background: #ffffff;
+    border: 2px solid var(--accent-teal, #76c7d1);
+    border-radius: 16px;
+    padding: 24px 28px;
+    max-width: 440px;
+    margin: 0 auto;
+    box-shadow: 0 10px 30px rgba(13, 115, 119, 0.12);
+    text-align: center;
+}
+body.dark .embedded-qr-box {
+    background: #0d1117;
+    border-color: #388bfd;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+}
+.embedded-qr-box h4 {
+    margin: 0 0 8px 0;
+    color: var(--primary-teal, #0d7377);
+    font-size: 1.15em;
+}
+body.dark .embedded-qr-box h4 {
+    color: var(--accent-teal, #76c7d1);
+}
+
+/* ─── QR Code Modal Overlay (Hidden by default!) ─── */
 .qr-modal-overlay {
     position: fixed !important;
     top: 0 !important;
@@ -3338,11 +3366,14 @@ body.dark .kbd-pill kbd {
     bottom: 0 !important;
     background: rgba(0, 0, 0, 0.65) !important;
     backdrop-filter: blur(4px) !important;
-    display: flex !important;
+    display: none;
     align-items: center !important;
     justify-content: center !important;
     z-index: 100000 !important;
     padding: 20px !important;
+}
+.qr-modal-overlay.open {
+    display: flex !important;
 }
 .qr-modal-card {
     background: #ffffff !important;
