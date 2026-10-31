@@ -5774,18 +5774,480 @@ function runUsername(u) {
 }
 window.runUsername = runUsername;
 
-/* ─── Add Profile to Compare ─── */
+/* ─── Add Profile to Compare (Supports up to 5 profiles: A, B, C, D, E) ─── */
 function addCompareProfile() {
     const cmpC = document.getElementById('cmpC');
     const cmpD = document.getElementById('cmpD');
+    const cmpE = document.getElementById('cmpE');
     const btn = document.getElementById('addCmpBtn');
-    if (cmpC && cmpC.style.display === 'none') {
+    
+    if (cmpC && (cmpC.style.display === 'none' || !cmpC.offsetParent)) {
         cmpC.style.display = '';
         cmpC.focus();
-    } else if (cmpD && cmpD.style.display === 'none') {
+    } else if (cmpD && (cmpD.style.display === 'none' || !cmpD.offsetParent)) {
         cmpD.style.display = '';
         cmpD.focus();
+    } else if (cmpE && (cmpE.style.display === 'none' || !cmpE.offsetParent)) {
+        cmpE.style.display = '';
+        cmpE.focus();
         if (btn) btn.style.display = 'none';
     }
 }
 window.addCompareProfile = addCompareProfile;
+
+/* ─── Robust Global Export & Share Action Handlers ─── */
+function downloadJSON() {
+    const cd = window.currentData;
+    const username = cd?.username || cd?.userData?.login || document.getElementById('githubInput')?.value?.trim();
+    if (!username) {
+        showToast('Please analyze a GitHub profile first!', 'warning');
+        return;
+    }
+    const score = cd?.analysis?.weightedScore || parseInt(document.getElementById('portfolioScore')?.textContent || '0', 10);
+    const scores = cd?.analysis?.scores || {
+        documentation: parseInt(document.getElementById('docScore')?.textContent || '0', 10),
+        codeStructure: parseInt(document.getElementById('codeScore')?.textContent || '0', 10),
+        activityConsistency: parseInt(document.getElementById('activityScore')?.textContent || '0', 10),
+        repositoryOrganization: parseInt(document.getElementById('orgScore')?.textContent || '0', 10),
+        projectImpact: parseInt(document.getElementById('impactScore')?.textContent || '0', 10),
+        technicalDepth: parseInt(document.getElementById('techScore')?.textContent || '0', 10)
+    };
+    const payload = {
+        username: username,
+        portfolioScore: score,
+        scoreBreakdown: scores,
+        profile: cd?.userData || {
+            name: document.getElementById('userName')?.textContent || username,
+            bio: document.getElementById('userBio')?.textContent || '',
+            repos: parseInt(document.getElementById('repoCount')?.textContent || '0', 10),
+            followers: parseInt(document.getElementById('followerCount')?.textContent || '0', 10),
+            stars: parseInt(document.getElementById('starCount')?.textContent || '0', 10)
+        },
+        strengths: cd?.analysis?.strengths || [],
+        improvements: cd?.analysis?.improvements || [],
+        recommendations: cd?.analysis?.recommendations || [],
+        topRepositories: (cd?.repos || []).slice(0, 10).map(r => ({
+            name: r.name,
+            description: r.description,
+            stars: r.stargazers_count,
+            forks: r.forks_count,
+            language: r.language,
+            url: r.html_url
+        })),
+        exportedAt: new Date().toISOString(),
+        generator: 'GitHub Portfolio Analyzer Enterprise'
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${username}-github-portfolio.json`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 1500);
+    showToast('⬇️ JSON portfolio report downloaded!', 'success');
+}
+window.downloadJSON = downloadJSON;
+
+function downloadMarkdown() {
+    const cd = window.currentData;
+    const username = cd?.username || cd?.userData?.login || document.getElementById('githubInput')?.value?.trim();
+    if (!username) {
+        showToast('Please analyze a GitHub profile first!', 'warning');
+        return;
+    }
+    const score = cd?.analysis?.weightedScore || parseInt(document.getElementById('portfolioScore')?.textContent || '0', 10);
+    const name = cd?.userData?.name || document.getElementById('userName')?.textContent || username;
+    const bio = cd?.userData?.bio || document.getElementById('userBio')?.textContent || 'Software Engineer';
+    const stars = cd?.userData ? (cd.repos||[]).reduce((s,r)=>s+(r.stargazers_count||0),0) : (document.getElementById('starCount')?.textContent || '0');
+    const repos = cd?.userData ? (cd.repos||[]).length : (document.getElementById('repoCount')?.textContent || '0');
+    const followers = cd?.userData?.followers || document.getElementById('followerCount')?.textContent || '0';
+
+    let md = `# 🚀 GitHub Portfolio Report: ${name} (@${username})
+
+`;
+    md += `> **Overall Recruiter Score:** ${score}/100
+`;
+    md += `> **Generated:** ${new Date().toLocaleString()}
+`;
+    md += `> **Bio:** ${bio}
+
+`;
+    md += `## 📊 Quick Overview
+`;
+    md += `- **GitHub Profile:** https://github.com/${username}
+`;
+    md += `- **Public Repositories:** ${repos}
+`;
+    md += `- **Total Stars Earned:** ⭐ ${stars}
+`;
+    md += `- **Followers:** 👥 ${followers}
+
+`;
+
+    md += `## 📈 Recruiter Scoring Breakdown
+`;
+    if (cd?.analysis?.scores) {
+        Object.entries(cd.analysis.scores).forEach(([pillar, val]) => {
+            const bar = '█'.repeat(Math.round(val / 10)) + '░'.repeat(10 - Math.round(val / 10));
+            md += `- **${pillar}:** ${Math.round(val)}% \`[${bar}]\`
+`;
+        });
+    } else {
+        md += `- Documentation Quality: ${document.getElementById('docScore')?.textContent || '0%'}
+`;
+        md += `- Code Structure: ${document.getElementById('codeScore')?.textContent || '0%'}
+`;
+        md += `- Activity Consistency: ${document.getElementById('activityScore')?.textContent || '0%'}
+`;
+        md += `- Repository Organization: ${document.getElementById('orgScore')?.textContent || '0%'}
+`;
+        md += `- Project Impact: ${document.getElementById('impactScore')?.textContent || '0%'}
+`;
+        md += `- Technical Depth: ${document.getElementById('techScore')?.textContent || '0%'}
+`;
+    }
+    md += `
+## 💪 Key Strengths
+`;
+    const strengths = cd?.analysis?.strengths || Array.from(document.querySelectorAll('#strengthsList li')).map(li => li.textContent);
+    (strengths.length ? strengths : ['Strong project diversity', 'Active GitHub contributions']).forEach(s => md += `- ✅ ${s}
+`);
+
+    md += `
+## ⚠️ Areas for Improvement
+`;
+    const improvements = cd?.analysis?.improvements || Array.from(document.querySelectorAll('#improvementsList li')).map(li => li.textContent);
+    (improvements.length ? improvements : ['Add live demos to top repositories', 'Improve README installation steps']).forEach(i => md += `- 💡 ${i}
+`);
+
+    md += `
+---
+*Report generated by [GitHub Portfolio Analyzer](${location.origin})*
+`;
+
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${username}-portfolio-report.md`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 1500);
+    showToast('📝 Markdown portfolio report downloaded!', 'success');
+}
+window.downloadMarkdown = downloadMarkdown;
+
+function shareLink() {
+    const cd = window.currentData;
+    const username = cd?.username || cd?.userData?.login || document.getElementById('githubInput')?.value?.trim();
+    if (!username) {
+        showToast('Please analyze a GitHub profile first!', 'warning');
+        return;
+    }
+    const url = `${location.origin}${location.pathname}?u=${encodeURIComponent(username)}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+            showToast('🔗 Share link copied to clipboard!', 'success');
+        }).catch(() => {
+            prompt('Copy your portfolio share link:', url);
+        });
+    } else {
+        prompt('Copy your portfolio share link:', url);
+    }
+}
+window.shareLink = shareLink;
+window.copyShareLink = shareLink;
+
+function sharePublicPortfolio() {
+    const cd = window.currentData;
+    const username = cd?.username || cd?.userData?.login || document.getElementById('githubInput')?.value?.trim();
+    if (!username) {
+        showToast('Please analyze a GitHub profile first!', 'warning');
+        return;
+    }
+    const url = `${location.origin}${location.pathname}?u=${encodeURIComponent(username)}`;
+    let modal = document.getElementById('sharePortfolioOverlay');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'sharePortfolioOverlay';
+        modal.className = 'qr-modal-overlay';
+        document.body.appendChild(modal);
+    }
+    modal.innerHTML = `
+        <div class="qr-modal-card">
+            <div class="qr-modal-header">
+                <h3>🌐 Public Portfolio Link</h3>
+                <button class="qr-close-btn" onclick="document.getElementById('sharePortfolioOverlay').style.display='none'">✕</button>
+            </div>
+            <p class="qr-modal-desc">Share your verified developer portfolio with recruiters, hiring managers, and your professional network:</p>
+            <div class="qr-link-box">${url}</div>
+            <div class="qr-modal-actions">
+                <button class="btn-analyze" onclick="
+                    navigator.clipboard?.writeText('${url}');
+                    showToast('📋 Public link copied to clipboard!', 'success');
+                    document.getElementById('sharePortfolioOverlay').style.display='none';
+                ">📋 Copy Link</button>
+                <button class="btn-secondary" onclick="window.open('${url}','_blank')">🚀 Open Portfolio</button>
+            </div>
+        </div>
+    `;
+    modal.style.display = 'flex';
+}
+window.sharePublicPortfolio = sharePublicPortfolio;
+
+function exportPDF() {
+    const cd = window.currentData;
+    const username = cd?.username || cd?.userData?.login || document.getElementById('githubInput')?.value?.trim();
+    if (!username) {
+        showToast('Please analyze a GitHub profile first!', 'warning');
+        return;
+    }
+    showToast('📄 Preparing print & PDF report...', 'info', 2000);
+    setTimeout(() => {
+        window.print();
+    }, 350);
+}
+window.exportPDF = exportPDF;
+
+/* ─── Profile QR Code Generation & Modal ─── */
+function generateQR() {
+    const cd = window.currentData;
+    const username = cd?.username || cd?.userData?.login || document.getElementById('githubInput')?.value?.trim();
+    if (!username) {
+        showToast('Please analyze a GitHub profile first!', 'warning');
+        return;
+    }
+    const url = `${location.origin}${location.pathname}?u=${encodeURIComponent(username)}`;
+    const modal = document.getElementById('qrCodeModal');
+    const container = document.getElementById('qrModalImageContainer');
+    const linkBox = document.getElementById('qrModalLinkBox');
+    if (!modal || !container || !linkBox) return;
+
+    linkBox.textContent = url;
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(url)}`;
+    container.innerHTML = `<img src="${qrApiUrl}" alt="Portfolio QR Code for @${username}" id="activeQrImage" style="display:block;margin:0 auto;border-radius:8px;">`;
+    modal.style.display = 'flex';
+    showToast('📱 Portfolio QR Code generated!', 'success');
+}
+window.generateQR = generateQR;
+
+function closeQRCodeModal() {
+    const modal = document.getElementById('qrCodeModal');
+    if (modal) modal.style.display = 'none';
+}
+window.closeQRCodeModal = closeQRCodeModal;
+
+function downloadQRCodeImage() {
+    const img = document.getElementById('activeQrImage');
+    if (!img || !img.src) return;
+    const a = document.createElement('a');
+    a.href = img.src;
+    a.download = 'portfolio-qr-code.png';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 1000);
+    showToast('⬇️ QR code downloaded!', 'success');
+}
+window.downloadQRCodeImage = downloadQRCodeImage;
+
+/* ─── Floating Help Instructions & User Guide (?) ─── */
+function toggleHelpInstructions() {
+    const panel = document.getElementById('helpInstructionsPanel');
+    if (!panel) return;
+    if (panel.style.display === 'none' || !panel.style.display) {
+        panel.style.display = 'block';
+    } else {
+        panel.style.display = 'none';
+    }
+}
+window.toggleHelpInstructions = toggleHelpInstructions;
+
+/* ─── Keyboard Shortcuts for Help & Escape ─── */
+document.addEventListener('keydown', (e) => {
+    if (e.key === '?' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+        e.preventDefault();
+        toggleHelpInstructions();
+    } else if (e.key === 'Escape') {
+        const hp = document.getElementById('helpInstructionsPanel');
+        if (hp) hp.style.display = 'none';
+        const qm = document.getElementById('qrCodeModal');
+        if (qm) qm.style.display = 'none';
+        const so = document.getElementById('sharePortfolioOverlay');
+        if (so) so.style.display = 'none';
+    }
+});
+
+/* ─── Compare up to 5 Profiles with True Winner & Multi-Radar ─── */
+let _compareRadarChartInstance = null;
+
+async function compareProfiles() {
+    const inputs = ['cmpA', 'cmpB', 'cmpC', 'cmpD', 'cmpE'];
+    const targets = inputs.map(id => (document.getElementById(id)?.value || '').trim()).filter(Boolean);
+
+    if (targets.length < 2) {
+        showToast('Please enter at least 2 usernames to compare!', 'warning');
+        return;
+    }
+
+    const box = document.getElementById('compareResults');
+    const radarWrap = document.getElementById('compareRadarWrap');
+    if (!box) return;
+
+    const colClass = targets.length === 5 ? 'five-col' : targets.length === 4 ? 'four-col' : targets.length === 3 ? 'three-col' : 'two-col';
+    box.className = `compare-results ${colClass}`;
+    box.style.display = 'grid';
+    box.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:36px;"><div class="spinner" style="margin:0 auto 12px;"></div><p style="color:var(--primary-teal);font-weight:700;">Analyzing ${targets.length} profiles simultaneously from GitHub...</p></div>`;
+    if (radarWrap) radarWrap.style.display = 'none';
+
+    try {
+        const devData = await Promise.all(targets.map(async (u) => {
+            const clean = u.replace(/^https?:\/\/(www\.)?github\.com\//i, '').replace(/\/$/, '');
+            let userRes = await fetch(`/api/github/users/${encodeURIComponent(clean)}`).catch(() => null);
+            if (!userRes || !userRes.ok) userRes = await fetch(`https://api.github.com/users/${encodeURIComponent(clean)}`).catch(() => null);
+            if (!userRes || !userRes.ok) throw new Error(`Could not find profile for "${clean}"`);
+            const user = await userRes.json();
+
+            let reposRes = await fetch(`/api/github/users/${encodeURIComponent(clean)}/repos?per_page=100&sort=updated`).catch(() => null);
+            if (!reposRes || !reposRes.ok) reposRes = await fetch(`https://api.github.com/users/${encodeURIComponent(clean)}/repos?per_page=100&sort=updated`).catch(() => null);
+            const repos = reposRes && reposRes.ok ? await reposRes.json() : [];
+
+            const analysis = window.analyzePortfolio ? window.analyzePortfolio(user, repos) : null;
+            const score = analysis?.weightedScore || Math.min(100, Math.round((user.public_repos * 2) + ((user.followers||0)*0.5) + (repos.reduce((s,r)=>s+(r.stargazers_count||0),0)*0.8)));
+            const scores = analysis?.scores || {
+                documentation: Math.min(100, 50 + (user.bio ? 20 : 0) + (user.blog ? 20 : 0)),
+                codeStructure: Math.min(100, 60 + Math.min(40, user.public_repos * 2)),
+                activityConsistency: Math.min(100, 45 + Math.min(50, repos.length * 3)),
+                repositoryOrganization: Math.min(100, 50 + (user.location ? 20 : 0)),
+                projectImpact: Math.min(100, Math.min(100, repos.reduce((s,r)=>s+(r.stargazers_count||0),0) * 4)),
+                technicalDepth: Math.min(100, 50 + Math.min(50, repos.filter(r=>!r.fork).length * 4))
+            };
+
+            const totalStars = repos.reduce((s, r) => s + (r.stargazers_count || 0), 0);
+            const originalRepos = repos.filter(r => !r.fork).length;
+            const rank = score >= 90 ? 'S-Rank' : score >= 75 ? 'A-Rank' : score >= 60 ? 'B-Rank' : score >= 45 ? 'C-Rank' : 'D-Rank';
+
+            return {
+                username: user.login,
+                name: user.name || user.login,
+                avatar: user.avatar_url,
+                bio: user.bio || '',
+                score,
+                rank,
+                scores,
+                totalStars,
+                originalRepos,
+                followers: user.followers || 0
+            };
+        }));
+
+        const maxScore = Math.max(...devData.map(d => d.score));
+        const winnerIndex = devData.findIndex(d => d.score === maxScore);
+        const borderColors = ['#0d7377', '#388bfd', '#8b5cf6', '#f59e0b', '#ec4899'];
+
+        box.innerHTML = devData.map((d, idx) => {
+            const isWinner = idx === winnerIndex && devData.length > 1;
+            return `
+                <div class="compare-col ${isWinner ? 'winner' : ''}" style="border-top: 4px solid ${borderColors[idx % borderColors.length]};">
+                    ${isWinner ? '<span class="winner-badge">🏆 Winner</span>' : ''}
+                    <img src="${d.avatar}" alt="${d.name}" class="compare-avatar">
+                    <h4>${d.name}</h4>
+                    <div class="username-tag">@${d.username}</div>
+                    <div class="score-display">${d.score}</div>
+                    <span class="rank-tag">${d.rank}</span>
+                    <div class="compare-stats-row">
+                        <div>⭐ <strong>${d.totalStars.toLocaleString()}</strong> stars</div>
+                        <div>📦 <strong>${d.originalRepos}</strong> original repos</div>
+                        <div>👥 <strong>${d.followers.toLocaleString()}</strong> followers</div>
+                    </div>
+                    <div style="text-align:left;margin-top:10px;">
+                        <div class="compare-pillar-row"><span>📝 Documentation</span><strong>${Math.round(d.scores.documentation)}%</strong></div>
+                        <div class="compare-pillar-row"><span>🏗️ Code Structure</span><strong>${Math.round(d.scores.codeStructure)}%</strong></div>
+                        <div class="compare-pillar-row"><span>📅 Activity</span><strong>${Math.round(d.scores.activityConsistency)}%</strong></div>
+                        <div class="compare-pillar-row"><span>🚀 Project Impact</span><strong>${Math.round(d.scores.projectImpact)}%</strong></div>
+                        <div class="compare-pillar-row"><span>🔬 Tech Depth</span><strong>${Math.round(d.scores.technicalDepth)}%</strong></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        if (radarWrap && window.Chart) {
+            radarWrap.style.display = 'block';
+            renderMultiCompareRadar(devData);
+        }
+        showToast(`⚖️ Compared ${devData.length} developers! Winner: @${devData[winnerIndex].username} (${maxScore}/100)`, 'success', 4500);
+    } catch (err) {
+        box.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--error);font-weight:600;">❌ Comparison failed: ${err.message || 'Check username spelling and try again'}</div>`;
+        showToast('Comparison failed: ' + (err.message || 'Error fetching data'), 'error');
+    }
+}
+window.compareProfiles = compareProfiles;
+
+function renderMultiCompareRadar(devData) {
+    const canvas = document.getElementById('compareRadarCanvas');
+    if (!canvas || !window.Chart) return;
+    if (_compareRadarChartInstance) {
+        _compareRadarChartInstance.destroy();
+        _compareRadarChartInstance = null;
+    }
+
+    const radarColors = [
+        { bg: 'rgba(13, 115, 119, 0.22)', border: '#0d7377' },
+        { bg: 'rgba(56, 139, 253, 0.22)', border: '#388bfd' },
+        { bg: 'rgba(139, 92, 246, 0.22)', border: '#8b5cf6' },
+        { bg: 'rgba(245, 158, 11, 0.22)', border: '#f59e0b' },
+        { bg: 'rgba(236, 72, 153, 0.22)', border: '#ec4899' }
+    ];
+
+    const labels = ['Documentation', 'Code Structure', 'Activity', 'Repository Org', 'Project Impact', 'Technical Depth'];
+    const datasets = devData.map((d, i) => {
+        const c = radarColors[i % radarColors.length];
+        return {
+            label: `@${d.username} (${d.score})`,
+            data: [
+                Math.round(d.scores.documentation || 50),
+                Math.round(d.scores.codeStructure || 50),
+                Math.round(d.scores.activityConsistency || 50),
+                Math.round(d.scores.repositoryOrganization || 50),
+                Math.round(d.scores.projectImpact || 50),
+                Math.round(d.scores.technicalDepth || 50)
+            ],
+            backgroundColor: c.bg,
+            borderColor: c.border,
+            borderWidth: 2,
+            pointBackgroundColor: c.border,
+            pointRadius: 4
+        };
+    });
+
+    const isDark = document.body.classList.contains('dark');
+    const gridColor = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)';
+    const textColor = isDark ? '#cbd5e1' : '#334155';
+
+    _compareRadarChartInstance = new Chart(canvas, {
+        type: 'radar',
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                r: {
+                    min: 0,
+                    max: 100,
+                    ticks: { stepSize: 20, color: textColor, backdropColor: 'transparent', font: { size: 10 } },
+                    grid: { color: gridColor },
+                    angleLines: { color: gridColor },
+                    pointLabels: { color: textColor, font: { size: 11, weight: '600' } }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: textColor, padding: 14, font: { size: 12, weight: '600' } }
+                }
+            }
+        }
+    });
+}
+window.renderMultiCompareRadar = renderMultiCompareRadar;

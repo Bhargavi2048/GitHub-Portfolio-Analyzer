@@ -664,6 +664,7 @@
                         <button class="btn-secondary" onclick="shareLink()">🔗 Share Link</button>
                         <button class="btn-secondary" id="sharePortfolioBtn" onclick="sharePublicPortfolio()">🌐 Share My Portfolio</button>
                         <button class="btn-secondary" id="exportPdfBtnNew" onclick="exportPDF()">📄 Export PDF</button>
+                        <button class="btn-secondary" id="generateQrBtnNew" onclick="generateQR()">📱 Generate QR Code</button>
                     </div>
                 </div>
 
@@ -671,20 +672,21 @@
 
 <section class="compare-section" id="compareSection">
     <div class="compare-card">
-        <h3>⚖️ Compare GitHub Profiles (up to 3)</h3>
-        <p class="compare-desc">Compare developers side by side with an interactive radar chart across all 5 scoring pillars.</p>
+        <h3>⚖️ Compare GitHub Profiles (up to 5)</h3>
+        <p class="compare-desc">Compare up to 5 developers side by side with full metrics and an interactive multi-developer radar chart.</p>
         <div class="compare-inputs" id="compareInputsWrap">
             <input id="cmpA" placeholder="Username A (e.g. torvalds)">
             <input id="cmpB" placeholder="Username B (e.g. gaearon)">
             <input id="cmpC" placeholder="Username C (optional)">
             <input id="cmpD" placeholder="Username D (optional)" style="display:none;">
+            <input id="cmpE" placeholder="Username E (optional)" style="display:none;">
             <button class="icon-btn" id="addCmpBtn" onclick="addCompareProfile()">+ Add Profile</button>
-            <button class="btn-analyze" onclick="compareProfiles()">Compare</button>
+            <button class="btn-analyze" onclick="compareProfiles()">Compare Profiles</button>
         </div>
         <div id="compareResults" class="compare-results" style="display:none;"></div>
-        <div id="compareRadarWrap" style="display:none;margin-top:20px;max-width:380px;margin-left:auto;margin-right:auto;">
-            <div class="chart-title" style="text-align:center;margin-bottom:10px;">📡 Radar: Score Pillars</div>
-            <canvas id="compareRadarCanvas" height="280"></canvas>
+        <div id="compareRadarWrap" style="display:none;margin-top:24px;max-width:540px;margin-left:auto;margin-right:auto;">
+            <div class="chart-title" style="text-align:center;margin-bottom:12px;">📡 Radar: Score Pillars Benchmark</div>
+            <canvas id="compareRadarCanvas" height="320"></canvas>
         </div>
     </div>
 </section>
@@ -803,6 +805,69 @@
      Portfolio Strength, Architecture Detection, Contribution Consistency,
      Open Source Readiness, Growth Timeline, Professional Export
      ============================================================ -->
+
+    <!-- Floating Help & Instructions Button (?) in Bottom-Left -->
+    <button class="help-fab" id="helpFabBtn" onclick="toggleHelpInstructions()" aria-label="Instructions and Help Guide" title="Instructions & Guide (?)">
+        <span class="help-fab-icon">?</span>
+    </button>
+
+    <!-- Help & Instructions Panel -->
+    <div class="help-instructions-panel" id="helpInstructionsPanel" style="display:none;" role="dialog" aria-label="Instructions & Help Guide">
+        <div class="help-panel-header">
+            <h4>📖 Instructions &amp; User Guide</h4>
+            <button class="help-panel-close" onclick="toggleHelpInstructions()" aria-label="Close Guide">✕</button>
+        </div>
+        <div class="help-panel-body">
+            <div class="help-step">
+                <strong>1. Analyze Profile</strong>
+                <p>Type any GitHub username or URL. Live suggestions appear instantly as you type.</p>
+            </div>
+            <div class="help-step">
+                <strong>2. Recruiter Score</strong>
+                <p>Calculates a 0–100 score across Documentation, Code Structure, Consistency, Impact, and Technical Depth.</p>
+            </div>
+            <div class="help-step">
+                <strong>3. Profile Completeness</strong>
+                <p>Review the "What is Missing" checklist to fix recruiter red-flags before job applications.</p>
+            </div>
+            <div class="help-step">
+                <strong>4. Compare up to 5 Developers</strong>
+                <p>Benchmark 2 to 5 GitHub accounts side-by-side with multi-dimensional radar comparison.</p>
+            </div>
+            <div class="help-step">
+                <strong>5. ATS Resume Matcher</strong>
+                <p>Upload a PDF resume to cross-reference verified GitHub repos against ATS target skills.</p>
+            </div>
+            <div class="help-step">
+                <strong>6. Share &amp; Export</strong>
+                <p>Download JSON, export Markdown reports, print/save PDF, or generate a portfolio QR code.</p>
+            </div>
+            <div class="help-shortcuts">
+                <span class="kbd-pill"><kbd>/</kbd> Focus search</span>
+                <span class="kbd-pill"><kbd>Ctrl+P</kbd> Print / PDF</span>
+                <span class="kbd-pill"><kbd>?</kbd> Toggle help</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="qr-modal-overlay" id="qrCodeModal" style="display:none;" onclick="if(event.target===this)closeQRCodeModal()">
+        <div class="qr-modal-card">
+            <div class="qr-modal-header">
+                <h3>📱 Portfolio QR Code</h3>
+                <button class="qr-close-btn" onclick="closeQRCodeModal()">✕</button>
+            </div>
+            <p class="qr-modal-desc">Scan to view this verified GitHub Portfolio Analyzer profile on any mobile device:</p>
+            <div class="qr-image-container" id="qrModalImageContainer">
+                <div class="spinner" style="margin:20px auto;"></div>
+            </div>
+            <div class="qr-link-box" id="qrModalLinkBox"></div>
+            <div class="qr-modal-actions">
+                <button class="btn-analyze" onclick="downloadQRCodeImage()">⬇️ Download QR Code</button>
+                <button class="btn-secondary" onclick="copyShareLink()">📋 Copy Profile URL</button>
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
     <script src="enterprise-features.js"></script>
