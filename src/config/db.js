@@ -8,11 +8,12 @@ const DB_PATH = process.env.SQLITE_PATH || path.join(__dirname, "..", "..", "dat
 let db;
 
 function getDb() {
-  if (!db) throw new Error("Database not initialised — call connectDB() first");
+  if (!db) connectDB();
   return db;
 }
 
-module.exports = async function connectDB() {
+function connectDB() {
+  if (db) return db;
   // Ensure data directory exists
   const dir = path.dirname(DB_PATH);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });

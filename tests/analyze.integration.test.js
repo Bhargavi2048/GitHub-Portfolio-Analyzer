@@ -39,18 +39,35 @@ const MOCK_EVENTS = [
   { type: "PushEvent", created_at: new Date().toISOString() },
 ];
 
-beforeAll(() => {
-  if (!nock) return;
-  nock.disableNetConnect();
-  nock.enableNetConnect("127.0.0.1");
-});
+const originalFetch = global.fetch;
 
-afterEach(() => {
-  if (nock) nock.cleanAll();
+beforeAll(() => {
+  global.fetch = jest.fn(async (url) => {
+    const u = String(url);
+    if (u.includes("/repos?")) {
+      return { ok: true, status: 200, json: async () => MOCK_REPOS, text: async () => "" };
+    }
+    if (u.includes("/events/public?")) {
+      return { ok: true, status: 200, json: async () => MOCK_EVENTS, text: async () => "" };
+    }
+    if (u.includes("/readme")) {
+      return { ok: true, status: 200, json: async () => ({ content: Buffer.from("# Hello").toString("base64") }), text: async () => "" };
+    }
+    if (u.includes("/users/ratelimiteduser")) {
+      return { ok: false, status: 403, json: async () => ({ message: "API rate limit exceeded" }), text: async () => "API rate limit exceeded" };
+    }
+    if (u.includes("/users/usernotfound99999")) {
+      return { ok: false, status: 404, json: async () => ({ message: "Not Found" }), text: async () => "Not Found" };
+    }
+    if (u.includes("/users/octocat")) {
+      return { ok: true, status: 200, json: async () => MOCK_PROFILE, text: async () => "" };
+    }
+    return { ok: false, status: 404, json: async () => ({ message: "Not Found" }), text: async () => "Not Found" };
+  });
 });
 
 afterAll(() => {
-  if (nock) nock.enableNetConnect();
+  global.fetch = originalFetch;
   return new Promise((r) => setTimeout(r, 100));
 });
 
