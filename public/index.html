@@ -67,10 +67,57 @@
                 </div>
             </section>
 
-                <div class="history-card" id="historyCard" style="display:none;">
-                    <h4>🕘 Recent Searches</h4>
-                    <div class="history-chips" id="historyChips"></div>
+                <!-- ===== ⚡ Check Notable People ===== -->
+            <section class="trending-panel" id="trendingPanel">
+                <div class="trending-header">
+                    <h3>⚡ Check Notable People</h3>
+                    <p class="trending-sub">Click any industry leader to benchmark against high-impact engineering standards:</p>
                 </div>
+                <div class="trending-list" id="trendingList">
+                    <div class="trending-user-card" onclick="runUsername('torvalds')" role="button" tabindex="0" title="Analyze Linus Torvalds">
+                        <img src="https://avatars.githubusercontent.com/u/1024025?v=4" alt="Linus Torvalds" class="tu-avatar" onerror="this.src='https://github.com/ghost.png'">
+                        <div class="tu-info">
+                            <div class="tu-name">Linus Torvalds <span class="tu-badge">Linux</span></div>
+                            <div class="tu-meta">Creator of Linux &amp; Git</div>
+                        </div>
+                    </div>
+                    <div class="trending-user-card" onclick="runUsername('gaearon')" role="button" tabindex="0" title="Analyze Dan Abramov">
+                        <img src="https://avatars.githubusercontent.com/u/810438?v=4" alt="Dan Abramov" class="tu-avatar" onerror="this.src='https://github.com/ghost.png'">
+                        <div class="tu-info">
+                            <div class="tu-name">Dan Abramov <span class="tu-badge">React</span></div>
+                            <div class="tu-meta">Co-creator of Redux &amp; React Core</div>
+                        </div>
+                    </div>
+                    <div class="trending-user-card" onclick="runUsername('sindresorhus')" role="button" tabindex="0" title="Analyze Sindre Sorhus">
+                        <img src="https://avatars.githubusercontent.com/u/170270?v=4" alt="Sindre Sorhus" class="tu-avatar" onerror="this.src='https://github.com/ghost.png'">
+                        <div class="tu-info">
+                            <div class="tu-name">Sindre Sorhus <span class="tu-badge">OSS</span></div>
+                            <div class="tu-meta">1000+ Open Source Modules</div>
+                        </div>
+                    </div>
+                    <div class="trending-user-card" onclick="runUsername('yyx990803')" role="button" tabindex="0" title="Analyze Evan You">
+                        <img src="https://avatars.githubusercontent.com/u/499550?v=4" alt="Evan You" class="tu-avatar" onerror="this.src='https://github.com/ghost.png'">
+                        <div class="tu-info">
+                            <div class="tu-name">Evan You <span class="tu-badge">Vue.js</span></div>
+                            <div class="tu-meta">Creator of Vue.js &amp; Vite</div>
+                        </div>
+                    </div>
+                    <div class="trending-user-card" onclick="runUsername('tj')" role="button" tabindex="0" title="Analyze TJ Holowaychuk">
+                        <img src="https://avatars.githubusercontent.com/u/25254?v=4" alt="TJ Holowaychuk" class="tu-avatar" onerror="this.src='https://github.com/ghost.png'">
+                        <div class="tu-info">
+                            <div class="tu-name">TJ Holowaychuk <span class="tu-badge">Node.js</span></div>
+                            <div class="tu-meta">Creator of Express, Koa &amp; Apex</div>
+                        </div>
+                    </div>
+                    <div class="trending-user-card" onclick="runUsername('antirez')" role="button" tabindex="0" title="Analyze Salvatore Sanfilippo">
+                        <img src="https://avatars.githubusercontent.com/u/65632?v=4" alt="Salvatore Sanfilippo" class="tu-avatar" onerror="this.src='https://github.com/ghost.png'">
+                        <div class="tu-info">
+                            <div class="tu-name">Salvatore Sanfilippo <span class="tu-badge">Redis</span></div>
+                            <div class="tu-meta">Creator of Redis In-Memory DB</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <div id="loadingState" class="loading-state hidden">
                 <div class="spinner"></div>
@@ -624,21 +671,21 @@
             </section>
 
 <section class="compare-section" id="compareSection">
-    <div class="compare-card compact">
-        <div class="compare-header">
-            <h3>⚖️ Compare GitHub Profiles Side-by-Side</h3>
-            <p class="compare-sub">Benchmark metrics, commit frequency, and documentation quality between two engineers.</p>
+    <div class="compare-card">
+        <h3>⚖️ Compare GitHub Profiles (up to 3)</h3>
+        <p class="compare-desc">Compare developers side by side with an interactive radar chart across all 5 scoring pillars.</p>
+        <div class="compare-inputs" id="compareInputsWrap">
+            <input id="cmpA" placeholder="Username A (e.g. torvalds)">
+            <input id="cmpB" placeholder="Username B (e.g. gaearon)">
+            <input id="cmpC" placeholder="Username C (optional)">
+            <input id="cmpD" placeholder="Username D (optional)" style="display:none;">
+            <button class="icon-btn" id="addCmpBtn" onclick="addCompareProfile()">+ Add Profile</button>
+            <button class="btn-analyze" onclick="compareProfiles()">Compare</button>
         </div>
-        <div class="compare-inputs-inline">
-            <input id="cmpA" class="cmp-input" placeholder="Developer A (e.g. torvalds)">
-            <span class="cmp-vs">VS</span>
-            <input id="cmpB" class="cmp-input" placeholder="Developer B (e.g. gaearon)">
-            <button class="btn-analyze cmp-btn" onclick="compareProfiles()">Compare Now</button>
-        </div>
-        <div id="compareResults" class="compare-results" style="display:none;margin-top:20px;"></div>
+        <div id="compareResults" class="compare-results" style="display:none;"></div>
         <div id="compareRadarWrap" style="display:none;margin-top:20px;max-width:380px;margin-left:auto;margin-right:auto;">
-            <div class="chart-title" style="text-align:center;margin-bottom:10px;">📡 Radar Comparison</div>
-            <canvas id="compareRadarCanvas" height="260"></canvas>
+            <div class="chart-title" style="text-align:center;margin-bottom:10px;">📡 Radar: Score Pillars</div>
+            <canvas id="compareRadarCanvas" height="280"></canvas>
         </div>
     </div>
 </section>

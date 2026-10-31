@@ -5577,3 +5577,33 @@ if (window.GHToast) {
     window.GHToast.warning = (m, d) => showToast(m, 'warning', d);
     window.GHToast.info = (m, d) => showToast(m, 'info', d);
 }
+
+
+
+/* ─── Check Notable People runUsername ─── */
+function runUsername(u) {
+    const input = document.getElementById('githubInput');
+    if (input) {
+        input.value = u;
+        if (typeof window.handleAnalysis === 'function') {
+            window.handleAnalysis();
+        }
+    }
+}
+window.runUsername = runUsername;
+
+/* ─── Add Profile to Compare ─── */
+function addCompareProfile() {
+    const cmpC = document.getElementById('cmpC');
+    const cmpD = document.getElementById('cmpD');
+    const btn = document.getElementById('addCmpBtn');
+    if (cmpC && cmpC.style.display === 'none') {
+        cmpC.style.display = '';
+        cmpC.focus();
+    } else if (cmpD && cmpD.style.display === 'none') {
+        cmpD.style.display = '';
+        cmpD.focus();
+        if (btn) btn.style.display = 'none';
+    }
+}
+window.addCompareProfile = addCompareProfile;

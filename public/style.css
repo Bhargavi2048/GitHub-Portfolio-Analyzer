@@ -2596,7 +2596,7 @@ body.dark .lang-badge {
     box-sizing: border-box;
 }
 html, body {
-    overflow-x: hidden !important;
+    /* overflow-x allowed for position: sticky */
     max-width: 100vw !important;
     margin: 0;
     padding: 0;
@@ -2850,4 +2850,169 @@ body.dark .toast, body.dark .gha-toast {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+}
+
+
+
+/* ─── Compact SaaS Box Sizing & High-Contrast Typography ─── */
+.container {
+    max-width: 980px !important;
+    margin: 0 auto !important;
+    padding: 0 20px !important;
+}
+
+/* Reduced left & right padding across all cards */
+.input-card,
+.score-card,
+.profile-card,
+.details-section,
+.scoring-breakdown,
+.feedback-card,
+.compare-card,
+.trending-panel,
+.resume-matcher-card,
+.missing-profile-card,
+.share-section,
+.stats-insights,
+.xp-section,
+.ai-insights-section,
+.ats-section,
+.charts-section,
+.heatmap-section {
+    padding: 24px 28px !important; /* Reduced from 50px/40px */
+    margin-bottom: 24px !important;
+    border-radius: 14px !important;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 12px !important;
+    }
+    .input-card,
+    .score-card,
+    .profile-card,
+    .details-section,
+    .feedback-card,
+    .compare-card,
+    .trending-panel {
+        padding: 18px 18px !important;
+    }
+}
+
+/* ─── Rock-Solid Sticky Tabs Navigation ─── */
+.analysis-tabs-nav {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 52px !important;
+    z-index: 1000 !important;
+    display: flex !important;
+    gap: 8px !important;
+    background: #ffffff !important;
+    border: 2px solid var(--accent-teal, #76c7d1) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12) !important;
+    margin: 20px 0 24px !important;
+    padding: 8px !important;
+    border-radius: 12px !important;
+}
+body.dark .analysis-tabs-nav {
+    background: #0d1117 !important;
+    border-color: #30363d !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ─── Compare Box Reduced Size ─── */
+.compare-card {
+    max-width: 980px !important;
+    margin: 0 auto 24px !important;
+    padding: 24px 28px !important;
+}
+.compare-desc {
+    color: #475569;
+    font-size: 0.9em;
+    margin-bottom: 16px;
+}
+body.dark .compare-desc {
+    color: #94a3b8 !important;
+}
+.compare-inputs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.compare-inputs input {
+    flex: 1;
+    min-width: 170px;
+    padding: 10px 14px;
+    border: 2px solid #dde8ea;
+    border-radius: 8px;
+    font-size: 0.9em;
+}
+body.dark .compare-inputs input {
+    background: #0d1117 !important;
+    border-color: #30363d !important;
+    color: #e6edf3 !important;
+}
+
+/* ─── Universal High Contrast: Zero Invisible Letters ─── */
+body {
+    color: #0f172a !important; /* Deep crisp slate-900 */
+}
+p, span, div, li, td, th, label {
+    text-rendering: optimizeLegibility;
+}
+.detail-label,
+.stat-label,
+.tu-meta,
+.repo-desc,
+.recommendation-text,
+.subtitle,
+.info-text,
+.missing-profile-sub,
+.share-section-desc,
+.card-desc,
+.metric-header {
+    color: #334155 !important; /* Slate-700: high contrast */
+    font-weight: 500;
+}
+.detail-value,
+.stat-value,
+.repo-name,
+.tu-name,
+.recommendation-title,
+.card-title,
+.metric-value {
+    color: #0f172a !important;
+    font-weight: 700;
+}
+
+/* Dark mode full text visibility */
+body.dark {
+    color: #f1f5f9 !important;
+}
+body.dark .detail-label,
+body.dark .stat-label,
+body.dark .tu-meta,
+body.dark .repo-desc,
+body.dark .recommendation-text,
+body.dark .subtitle,
+body.dark .info-text,
+body.dark .missing-profile-sub,
+body.dark .share-section-desc,
+body.dark .card-desc {
+    color: #94a3b8 !important; /* Slate-400: perfectly visible on dark cards */
+}
+body.dark .detail-value,
+body.dark .stat-value,
+body.dark .repo-name,
+body.dark .tu-name,
+body.dark .recommendation-title,
+body.dark .card-title,
+body.dark .metric-value,
+body.dark h1, body.dark h2, body.dark h3, body.dark h4 {
+    color: #ffffff !important;
+}
+body.dark .empty-state,
+body.dark .missing-content p {
+    color: #cbd5e1 !important;
 }
