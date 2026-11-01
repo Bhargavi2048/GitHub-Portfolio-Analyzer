@@ -101,12 +101,12 @@ app.get("/leaderboard", (_req, res) =>
 
 app.use(express.static(path.join(__dirname, "..", "public"), {
   setHeaders: (res, filePath) => {
-    if (filePath.endsWith(".html")) {
+    if (filePath.endsWith(".html") || filePath.endsWith(".js") || filePath.endsWith(".css")) {
       res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       res.setHeader("Pragma", "no-cache");
       res.setHeader("Expires", "0");
     } else {
-      res.setHeader("Cache-Control", "public, max-age=600");
+      res.setHeader("Cache-Control", "public, max-age=3600");
     }
   },
   etag: true,

@@ -220,8 +220,12 @@
     return el;
   }
   function dismiss(el) {
-    el.classList.remove("show");
-    setTimeout(() => el.remove(), 300);
+    if (!el) return;
+    if (el.classList && typeof el.classList.remove === 'function') el.classList.remove("show");
+    setTimeout(() => {
+      if (el && typeof el.remove === 'function') el.remove();
+      else if (el && el.parentNode) el.parentNode.removeChild(el);
+    }, 300);
   }
   window.GHToast = {
     success: (m, d) => toast(m, "success", d),
@@ -252,7 +256,11 @@
   }
   function renderRecent() {
     const old = document.getElementById("gha-recent-wrap");
-    if (old) old.remove();
+    if (old && typeof old.remove === 'function') {
+      old.remove();
+    } else if (old && old.parentNode) {
+      old.parentNode.removeChild(old);
+    }
     const items = getRecent();
     if (!items.length) return;
     const inp = document.getElementById("githubInput") || document.querySelector("input[placeholder*='username']");
@@ -1118,7 +1126,10 @@ ${a.languages.slice(0,6).map(l=>`- ${l.name}: ${l.percentage}%`).join('\n')}
             t.className = `toast ${type}`;
             t.textContent = msg;
             container.appendChild(t);
-            setTimeout(() => t.remove(), duration + 100);
+            setTimeout(() => {
+                if (t && typeof t.remove === 'function') t.remove();
+                else if (t && t.parentNode) t.parentNode.removeChild(t);
+            }, duration + 100);
         }
 
         // Animated counter utility
@@ -1146,7 +1157,8 @@ ${a.languages.slice(0,6).map(l=>`- ${l.name}: ${l.percentage}%`).join('\n')}
             const canvas = document.createElement('canvas');
             canvas.id = 'particles-canvas';
             document.body.appendChild(canvas);
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext ? canvas.getContext('2d') : null;
+            if (!ctx) return;
             let W, H, particles = [];
             function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
             resize();
@@ -1764,7 +1776,7 @@ Generated: ${new Date().toLocaleString()}`;
             <button id="privacyOk" aria-label="Dismiss privacy notice">Got it</button>
         `;
         const container = document.querySelector('.container');
-        container.insertBefore(bar, container.firstChild);
+        if (container) container.insertBefore(bar, container.firstChild);
         bar.querySelector('#privacyOk').onclick = () => { localStorage.setItem('gpa_privacy_ack','1'); bar.remove(); };
         bar.querySelector('#privacyMore').onclick = (e) => { e.preventDefault(); openModal('privacyModal'); };
     }
@@ -3914,17 +3926,15 @@ setTimeout(hookAnalysisComplete, 800);
 setTimeout(hookAnalysisComplete, 2000);
 
 // Expose new feature functions globally
-// openAuthModal removed
-// openLeaderboardModal removed
-window.openEmbedCardModal = openEmbedCardModal;
-window.runAISkillGap = runAISkillGap;
-window.addCompareProfile = addCompareProfile;
-window.logout = logout;
-window.doLogin = doLogin;
-window.doRegister = doRegister;
-window.switchAuthTab = switchAuthTab;
-window.openUserMenu = openUserMenu;
-window.showGlobalRank = showGlobalRank;
+window.openEmbedCardModal = typeof openEmbedCardModal === 'function' ? openEmbedCardModal : () => {};
+window.runAISkillGap = typeof runAISkillGap === 'function' ? runAISkillGap : () => {};
+window.addCompareProfile = typeof addCompareProfile === 'function' ? addCompareProfile : () => {};
+if (typeof logout === 'function') window.logout = logout;
+if (typeof doLogin === 'function') window.doLogin = doLogin;
+if (typeof doRegister === 'function') window.doRegister = doRegister;
+if (typeof switchAuthTab === 'function') window.switchAuthTab = switchAuthTab;
+if (typeof openUserMenu === 'function') window.openUserMenu = openUserMenu;
+if (typeof showGlobalRank === 'function') window.showGlobalRank = showGlobalRank;
 
 })();
 
@@ -5445,49 +5455,148 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ─── Instant & Live GitHub User Autocomplete Suggestions ─── */
 const POPULAR_GITHUB_USERS = [
-    { login: 'torvalds', name: 'Linus Torvalds', type: 'Linux & Git Creator', avatar: 'https://avatars.githubusercontent.com/u/1024025?v=4' },
-    { login: 'gaearon', name: 'Dan Abramov', type: 'React & Redux Core', avatar: 'https://avatars.githubusercontent.com/u/810438?v=4' },
-    { login: 'sindresorhus', name: 'Sindre Sorhus', type: 'Prolific OSS Creator', avatar: 'https://avatars.githubusercontent.com/u/170270?v=4' },
-    { login: 'yyx990803', name: 'Evan You', type: 'Vue.js & Vite Creator', avatar: 'https://avatars.githubusercontent.com/u/499550?v=4' },
-    { login: 'tj', name: 'TJ Holowaychuk', type: 'Express, Koa & Apex', avatar: 'https://avatars.githubusercontent.com/u/25254?v=4' },
-    { login: 'antirez', name: 'Salvatore Sanfilippo', type: 'Redis Creator', avatar: 'https://avatars.githubusercontent.com/u/65632?v=4' },
+    // A
     { login: 'addyosmani', name: 'Addy Osmani', type: 'Chrome Engineering Lead', avatar: 'https://avatars.githubusercontent.com/u/110953?v=4' },
-    { login: 'kentcdodds', name: 'Kent C. Dodds', type: 'Testing Library & Remix', avatar: 'https://avatars.githubusercontent.com/u/1500684?v=4' },
-    { login: 'rauchg', name: 'Guillermo Rauch', type: 'Vercel & Next.js CEO', avatar: 'https://avatars.githubusercontent.com/u/13041?v=4' },
-    { login: 'rich-harris', name: 'Rich Harris', type: 'Svelte & Rollup Creator', avatar: 'https://avatars.githubusercontent.com/u/1162160?v=4' },
-    { login: 'mitchellh', name: 'Mitchell Hashimoto', type: 'HashiCorp & Ghostty', avatar: 'https://avatars.githubusercontent.com/u/1299?v=4' },
-    { login: 'ry', name: 'Ryan Dahl', type: 'Node.js & Deno Creator', avatar: 'https://avatars.githubusercontent.com/u/80?v=4' },
-    { login: 'bhargavi2048-boop', name: 'Bhargavi', type: 'Project Author', avatar: 'https://avatars.githubusercontent.com/u/157924618?v=4' },
-    { login: 'brendaneich', name: 'Brendan Eich', type: 'JavaScript Creator & Brave', avatar: 'https://avatars.githubusercontent.com/u/111440?v=4' },
-    { login: 'bradtraversy', name: 'Brad Traversy', type: 'Traversy Media Educator', avatar: 'https://avatars.githubusercontent.com/u/5550850?v=4' },
-    { login: 'bkeepers', name: 'Brandon Keepers', type: 'GitHub Engineering', avatar: 'https://avatars.githubusercontent.com/u/3173?v=4' },
-    { login: 'defunkt', name: 'Chris Wanstrath', type: 'GitHub Co-Founder', avatar: 'https://avatars.githubusercontent.com/u/2?v=4' },
-    { login: 'dhh', name: 'David Heinemeier Hansson', type: 'Rails & 37signals', avatar: 'https://avatars.githubusercontent.com/u/2741?v=4' },
-    { login: 'developit', name: 'Jason Miller', type: 'Preact Creator', avatar: 'https://avatars.githubusercontent.com/u/105127?v=4' },
-    { login: 'dan', name: 'Dan', type: 'Open Source Dev', avatar: 'https://avatars.githubusercontent.com/u/10?v=4' },
-    { login: 'chriseppstein', name: 'Chris Eppstein', type: 'Compass & Sass', avatar: 'https://avatars.githubusercontent.com/u/451?v=4' },
+    { login: 'antirez', name: 'Salvatore Sanfilippo', type: 'Redis Creator', avatar: 'https://avatars.githubusercontent.com/u/65632?v=4' },
+    { login: 'adamwathan', name: 'Adam Wathan', type: 'Tailwind CSS Creator', avatar: 'https://avatars.githubusercontent.com/u/4323180?v=4' },
+    { login: 'alex', name: 'Alex Gaynor', type: 'Python & PyPy Core', avatar: 'https://avatars.githubusercontent.com/u/772?v=4' },
+    { login: 'astaxie', name: 'Asta Xie', type: 'Beego Framework Creator', avatar: 'https://avatars.githubusercontent.com/u/233907?v=4' },
+    { login: 'ai', name: 'Andrey Sitnik', type: 'Autoprefixer & PostCSS', avatar: 'https://avatars.githubusercontent.com/u/193433?v=4' },
+
+    // B
+    { login: 'bhargavi2048-boop', name: 'Bhargavi', type: 'Project Author & Engineer', avatar: 'https://avatars.githubusercontent.com/u/157924618?v=4' },
+    { login: 'brendaneich', name: 'Brendan Eich', type: 'JavaScript Creator & Brave CEO', avatar: 'https://avatars.githubusercontent.com/u/111440?v=4' },
+    { login: 'bradtraversy', name: 'Brad Traversy', type: 'Traversy Media OSS Educator', avatar: 'https://avatars.githubusercontent.com/u/5550850?v=4' },
+    { login: 'bkeepers', name: 'Brandon Keepers', type: 'GitHub Open Source Lead', avatar: 'https://avatars.githubusercontent.com/u/3173?v=4' },
+    { login: 'bvaughn', name: 'Brian Vaughn', type: 'React Core & DevTools', avatar: 'https://avatars.githubusercontent.com/u/29597?v=4' },
+    { login: 'balupton', name: 'Benjamin Lupton', type: 'DocPad & Bevry Creator', avatar: 'https://avatars.githubusercontent.com/u/61148?v=4' },
+    { login: 'benjamn', name: 'Ben Newman', type: 'Apollo & Meteor Architect', avatar: 'https://avatars.githubusercontent.com/u/5750?v=4' },
+    { login: 'blakeembrey', name: 'Blake Embrey', type: 'TypeScript & TypeDoc', avatar: 'https://avatars.githubusercontent.com/u/1088987?v=4' },
+
+    // C
+    { login: 'chriseppstein', name: 'Chris Eppstein', type: 'Compass & Sass Core', avatar: 'https://avatars.githubusercontent.com/u/451?v=4' },
     { login: 'cpojer', name: 'Christoph Nakazawa', type: 'Jest & React Native Lead', avatar: 'https://avatars.githubusercontent.com/u/13352?v=4' },
+    { login: 'clauderic', name: 'Claudéric Demers', type: 'dnd-kit Creator', avatar: 'https://avatars.githubusercontent.com/u/1416436?v=4' },
+    { login: 'catdad', name: 'Kirill', type: 'Canvas-Confetti Creator', avatar: 'https://avatars.githubusercontent.com/u/821773?v=4' },
+
+    // D
+    { login: 'dan', name: 'Dan', type: 'Open Source Developer', avatar: 'https://avatars.githubusercontent.com/u/10?v=4' },
+    { login: 'defunkt', name: 'Chris Wanstrath', type: 'GitHub Co-Founder', avatar: 'https://avatars.githubusercontent.com/u/2?v=4' },
+    { login: 'dhh', name: 'David Heinemeier Hansson', type: 'Ruby on Rails & 37signals', avatar: 'https://avatars.githubusercontent.com/u/2741?v=4' },
+    { login: 'developit', name: 'Jason Miller', type: 'Preact Creator', avatar: 'https://avatars.githubusercontent.com/u/105127?v=4' },
+    { login: 'dominictarr', name: 'Dominic Tarr', type: 'Node.js Streams Pioneer', avatar: 'https://avatars.githubusercontent.com/u/259374?v=4' },
+
+    // E
+    { login: 'egoist', name: 'EGOIST', type: 'tsup, unbuild & cac Creator', avatar: 'https://avatars.githubusercontent.com/u/8784712?v=4' },
+    { login: 'elliotkitson', name: 'Elliot Kitson', type: 'Full Stack Engineer', avatar: 'https://avatars.githubusercontent.com/u/7463328?v=4' },
+    { login: 'elrumordelaluz', name: 'Lionel', type: 'UI Component Creator', avatar: 'https://avatars.githubusercontent.com/u/98912?v=4' },
+
+    // F
+    { login: 'fabpot', name: 'Fabien Potencier', type: 'Symfony Framework Creator', avatar: 'https://avatars.githubusercontent.com/u/47313?v=4' },
     { login: 'feross', name: 'Feross Aboukhadijeh', type: 'WebTorrent & Socket.dev', avatar: 'https://avatars.githubusercontent.com/u/121766?v=4' },
-    { login: 'fabpot', name: 'Fabien Potencier', type: 'Symfony Creator', avatar: 'https://avatars.githubusercontent.com/u/47313?v=4' },
-    { login: 'getify', name: 'Kyle Simpson', type: 'You Don\'t Know JS', avatar: 'https://avatars.githubusercontent.com/u/150330?v=4' },
-    { login: 'hakimel', name: 'Hakim El Hattab', type: 'reveal.js & Hakim.se', avatar: 'https://avatars.githubusercontent.com/u/83649?v=4' },
+    { login: 'fat', name: 'Jacob Thornton', type: 'Bootstrap Co-Creator', avatar: 'https://avatars.githubusercontent.com/u/169705?v=4' },
+
+    // G
+    { login: 'gaearon', name: 'Dan Abramov', type: 'React & Redux Core', avatar: 'https://avatars.githubusercontent.com/u/810438?v=4' },
+    { login: 'getify', name: 'Kyle Simpson', type: 'You Don\'t Know JS Author', avatar: 'https://avatars.githubusercontent.com/u/150330?v=4' },
+    { login: 'gorhill', name: 'Raymond Hill', type: 'uBlock Origin Creator', avatar: 'https://avatars.githubusercontent.com/u/585534?v=4' },
+    { login: 'guille', name: 'Guillermo Rauch', type: 'Socket.io Creator', avatar: 'https://avatars.githubusercontent.com/u/13041?v=4' },
+
+    // H
+    { login: 'hakimel', name: 'Hakim El Hattab', type: 'reveal.js & Hakim.se Creator', avatar: 'https://avatars.githubusercontent.com/u/83649?v=4' },
     { login: 'holman', name: 'Zach Holman', type: 'Early GitHub Engineer', avatar: 'https://avatars.githubusercontent.com/u/2723?v=4' },
+    { login: 'huashengdun', name: 'Hua Shengdun', type: 'Go & WebRTC Engineer', avatar: 'https://avatars.githubusercontent.com/u/745233?v=4' },
+
+    // I
     { login: 'isaacs', name: 'Isaac Z. Schlueter', type: 'npm Creator', avatar: 'https://avatars.githubusercontent.com/u/9287?v=4' },
+    { login: 'igor-alexandrov', name: 'Igor Alexandrov', type: 'Ruby & Rails Contributor', avatar: 'https://avatars.githubusercontent.com/u/61092?v=4' },
+    { login: 'ianstormtaylor', name: 'Ian Storm Taylor', type: 'Slate & Segment Co-Founder', avatar: 'https://avatars.githubusercontent.com/u/311752?v=4' },
+
+    // J
     { login: 'jashkenas', name: 'Jeremy Ashkenas', type: 'Backbone & CoffeeScript', avatar: 'https://avatars.githubusercontent.com/u/11116?v=4' },
-    { login: 'kelseyhightower', name: 'Kelsey Hightower', type: 'Kubernetes Pioneer', avatar: 'https://avatars.githubusercontent.com/u/410038?v=4' },
-    { login: 'lea-verou', name: 'Lea Verou', type: 'W3C & CSS Secrets', avatar: 'https://avatars.githubusercontent.com/u/175836?v=4' },
-    { login: 'mitsuhiko', name: 'Armin Ronacher', type: 'Flask & Sentry Creator', avatar: 'https://avatars.githubusercontent.com/u/7396?v=4' },
+    { login: 'jkbrzt', name: 'Jakub Roztocil', type: 'HTTPie Creator', avatar: 'https://avatars.githubusercontent.com/u/327710?v=4' },
+    { login: 'johnpapa', name: 'John Papa', type: 'Angular & Vue Educator', avatar: 'https://avatars.githubusercontent.com/u/1202528?v=4' },
+    { login: 'jlongster', name: 'James Long', type: 'Prettier & Actual Budget', avatar: 'https://avatars.githubusercontent.com/u/17031?v=4' },
+
+    // K
+    { login: 'kentcdodds', name: 'Kent C. Dodds', type: 'Testing Library & EpicWeb', avatar: 'https://avatars.githubusercontent.com/u/1500684?v=4' },
+    { login: 'kelseyhightower', name: 'Kelsey Hightower', type: 'Kubernetes & Cloud Pioneer', avatar: 'https://avatars.githubusercontent.com/u/410038?v=4' },
+    { login: 'kennethreitz', name: 'Kenneth Reitz', type: 'Requests (Python) Creator', avatar: 'https://avatars.githubusercontent.com/u/119893?v=4' },
+    { login: 'krasimir', name: 'Krasimir Tsonev', type: 'JavaScript & Node.js Author', avatar: 'https://avatars.githubusercontent.com/u/200746?v=4' },
+
+    // L
+    { login: 'lea-verou', name: 'Lea Verou', type: 'W3C & CSS Secrets Author', avatar: 'https://avatars.githubusercontent.com/u/175836?v=4' },
+    { login: 'lencx', name: 'lencx', type: 'ChatGPT Desktop & Rust OSS', avatar: 'https://avatars.githubusercontent.com/u/14012511?v=4' },
+    { login: 'luin', name: 'Zihua Li', type: 'ioredis Creator', avatar: 'https://avatars.githubusercontent.com/u/1042730?v=4' },
+
+    // M
+    { login: 'mitchellh', name: 'Mitchell Hashimoto', type: 'HashiCorp & Ghostty Creator', avatar: 'https://avatars.githubusercontent.com/u/1299?v=4' },
+    { login: 'mitsuhiko', name: 'Armin Ronacher', type: 'Flask & Rye Creator', avatar: 'https://avatars.githubusercontent.com/u/7396?v=4' },
     { login: 'mrdoob', name: 'Ricardo Cabello', type: 'three.js Creator', avatar: 'https://avatars.githubusercontent.com/u/97088?v=4' },
     { login: 'mikeal', name: 'Mikeal Rogers', type: 'Request & Node.js Leader', avatar: 'https://avatars.githubusercontent.com/u/179?v=4' },
-    { login: 'nate-parrott', name: 'Nate Parrott', type: 'Design Engineer', avatar: 'https://avatars.githubusercontent.com/u/1324707?v=4' },
-    { login: 'orta', name: 'Orta Therox', type: 'TypeScript & CocoaPods', avatar: 'https://avatars.githubusercontent.com/u/49038?v=4' },
-    { login: 'paulirish', name: 'Paul Irish', type: 'Chrome DevTools Lead', avatar: 'https://avatars.githubusercontent.com/u/39191?v=4' },
+    { login: 'mattt', name: 'Mattt', type: 'AFNetworking & NSHipster', avatar: 'https://avatars.githubusercontent.com/u/762949?v=4' },
+
+    // N
+    { login: 'nate-parrott', name: 'Nate Parrott', type: 'Design Engineer & AI UX', avatar: 'https://avatars.githubusercontent.com/u/1324707?v=4' },
+    { login: 'nzakas', name: 'Nicholas C. Zakas', type: 'ESLint Creator', avatar: 'https://avatars.githubusercontent.com/u/38546?v=4' },
+    { login: 'niklasvh', name: 'Niklas von Hertzen', type: 'html2canvas Creator', avatar: 'https://avatars.githubusercontent.com/u/551228?v=4' },
+
+    // O
+    { login: 'orta', name: 'Orta Therox', type: 'TypeScript & CocoaPods Lead', avatar: 'https://avatars.githubusercontent.com/u/49038?v=4' },
+    { login: 'octocat', name: 'The Octocat', type: 'GitHub Official Mascot', avatar: 'https://avatars.githubusercontent.com/u/583231?v=4' },
+    { login: 'oliviertassinari', name: 'Olivier Tassinari', type: 'MUI / Material-UI Co-Founder', avatar: 'https://avatars.githubusercontent.com/u/3165635?v=4' },
+
+    // P
+    { login: 'paulirish', name: 'Paul Irish', type: 'Chrome DevTools & Web Perf', avatar: 'https://avatars.githubusercontent.com/u/39191?v=4' },
+    { login: 'photonstorm', name: 'Richard Davey', type: 'Phaser Game Engine Creator', avatar: 'https://avatars.githubusercontent.com/u/164476?v=4' },
+    { login: 'pranaygp', name: 'Pranay', type: 'Open Source Contributor', avatar: 'https://avatars.githubusercontent.com/u/8493181?v=4' },
+
+    // Q
+    { login: 'qix-', name: 'Josh Junon', type: 'Color & chalk Contributor', avatar: 'https://avatars.githubusercontent.com/u/885648?v=4' },
+
+    // R
+    { login: 'rauchg', name: 'Guillermo Rauch', type: 'Vercel CEO & Next.js Pioneer', avatar: 'https://avatars.githubusercontent.com/u/13041?v=4' },
+    { login: 'rich-harris', name: 'Rich Harris', type: 'Svelte & Rollup Creator', avatar: 'https://avatars.githubusercontent.com/u/1162160?v=4' },
+    { login: 'ry', name: 'Ryan Dahl', type: 'Node.js & Deno Creator', avatar: 'https://avatars.githubusercontent.com/u/80?v=4' },
     { login: 'remy', name: 'Remy Sharp', type: 'nodemon & JS Bin Creator', avatar: 'https://avatars.githubusercontent.com/u/4154?v=4' },
-    { login: 'shadcn', name: 'shadcn', type: 'shadcn/ui Creator', avatar: 'https://avatars.githubusercontent.com/u/124599?v=4' },
+    { login: 'rstacruz', name: 'Rico Sta. Cruz', type: 'NProgress & Flatdoc Creator', avatar: 'https://avatars.githubusercontent.com/u/74385?v=4' },
+
+    // S
+    { login: 'sindresorhus', name: 'Sindre Sorhus', type: '1,000+ Open Source Modules', avatar: 'https://avatars.githubusercontent.com/u/170270?v=4' },
+    { login: 'shadcn', name: 'shadcn', type: 'shadcn/ui & Radix Creator', avatar: 'https://avatars.githubusercontent.com/u/124599?v=4' },
     { login: 'sebmarkbage', name: 'Sebastian Markbåge', type: 'React Architect', avatar: 'https://avatars.githubusercontent.com/u/63648?v=4' },
-    { login: 'wesbos', name: 'Wes Bos', type: 'Full Stack Educator', avatar: 'https://avatars.githubusercontent.com/u/176013?v=4' },
-    { login: 'willmcgugan', name: 'Will McGugan', type: 'Rich & Textualize', avatar: 'https://avatars.githubusercontent.com/u/554369?v=4' },
-    { login: 'zellwk', name: 'Zell Liew', type: 'CSS & JS Educator', avatar: 'https://avatars.githubusercontent.com/u/3607481?v=4' }
+    { login: 'stephenplusplus', name: 'Stephen Sawchuk', type: 'Google Cloud Node.js Lead', avatar: 'https://avatars.githubusercontent.com/u/758244?v=4' },
+
+    // T
+    { login: 'torvalds', name: 'Linus Torvalds', type: 'Linux & Git Creator', avatar: 'https://avatars.githubusercontent.com/u/1024025?v=4' },
+    { login: 'tj', name: 'TJ Holowaychuk', type: 'Express, Koa & Apex Creator', avatar: 'https://avatars.githubusercontent.com/u/25254?v=4' },
+    { login: 'tannerlinsley', name: 'Tanner Linsley', type: 'TanStack Query & Table', avatar: 'https://avatars.githubusercontent.com/u/5580297?v=4' },
+    { login: 'tpope', name: 'Tim Pope', type: 'Fugitive & Vim Legend', avatar: 'https://avatars.githubusercontent.com/u/37993?v=4' },
+    { login: 'taylorotwell', name: 'Taylor Otwell', type: 'Laravel Creator', avatar: 'https://avatars.githubusercontent.com/u/463230?v=4' },
+    { login: 'timneutkens', name: 'Tim Neutkens', type: 'Next.js Lead Engineer', avatar: 'https://avatars.githubusercontent.com/u/6324199?v=4' },
+
+    // U
+    { login: 'unocss', name: 'UnoCSS', type: 'Instant On-Demand Atomic CSS', avatar: 'https://avatars.githubusercontent.com/u/904724?v=4' },
+
+    // V
+    { login: 'vjeux', name: 'Christopher Chedeau', type: 'Prettier & CSS-in-JS Pioneer', avatar: 'https://avatars.githubusercontent.com/u/197597?v=4' },
+    { login: 'visionmedia', name: 'Visionmedia', type: 'Mocha, Jade & Debug OSS', avatar: 'https://avatars.githubusercontent.com/u/415959?v=4' },
+
+    // W
+    { login: 'wesbos', name: 'Wes Bos', type: 'Full Stack JavaScript Educator', avatar: 'https://avatars.githubusercontent.com/u/176013?v=4' },
+    { login: 'willmcgugan', name: 'Will McGugan', type: 'Rich & Textualize Creator', avatar: 'https://avatars.githubusercontent.com/u/554369?v=4' },
+    { login: 'webpro', name: 'Lars Kappert', type: 'knip & Release-It Creator', avatar: 'https://avatars.githubusercontent.com/u/456426?v=4' },
+
+    // X
+    { login: 'xaviergonz', name: 'Xavier Gonzalez', type: 'mobx-keystone Creator', avatar: 'https://avatars.githubusercontent.com/u/843075?v=4' },
+
+    // Y
+    { login: 'yyx990803', name: 'Evan You', type: 'Vue.js & Vite Creator', avatar: 'https://avatars.githubusercontent.com/u/499550?v=4' },
+    { login: 'yaydoc', name: 'Yaydoc', type: 'Documentation Generator', avatar: 'https://avatars.githubusercontent.com/u/25390977?v=4' },
+
+    // Z
+    { login: 'zellwk', name: 'Zell Liew', type: 'CSS & JavaScript Educator', avatar: 'https://avatars.githubusercontent.com/u/3607481?v=4' },
+    { login: 'zed-industries', name: 'Zed Industries', type: 'High-Performance Rust Editor', avatar: 'https://avatars.githubusercontent.com/u/88344577?v=4' }
 ];
 
 function rankUserSuggestions(users, query) {
@@ -5514,24 +5623,33 @@ function bindInputAutocomplete(inputId, dropdownId, onSelect, badgeText = 'Selec
     const input = document.getElementById(inputId);
     const dropdown = document.getElementById(dropdownId);
     if (!input || !dropdown) return;
-    if (input._autocompleteBound) return;
-    input._autocompleteBound = true;
+    if (input._acBound) return;
+    input._acBound = true;
 
     let timer = null;
     let activeIdx = -1;
 
-    function renderList(users) {
+    function highlightMatch(text, query) {
+        if (!query) return text;
+        const qEsc = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return text.replace(new RegExp(`(^|)(${qEsc})`, 'i'), '$1<mark style="background:transparent;color:var(--accent-teal, #388bfd);font-weight:800;text-decoration:underline;">$2</mark>');
+    }
+
+    function renderList(users, query = '') {
         if (!users || !users.length) {
-            dropdown.innerHTML = '<div style="padding:10px 14px;color:#475569;font-size:0.9em;font-weight:600;">No matching profiles found</div>';
+            dropdown.innerHTML = '<div style="padding:12px 14px;color:#475569;font-size:0.92em;font-weight:600;text-align:center;">🔍 No matching GitHub profiles found</div>';
+            dropdown.classList.add('visible', 'is-open');
             dropdown.style.display = 'block';
             return;
         }
         activeIdx = -1;
-        dropdown.innerHTML = users.map((u, idx) => `
+        const headerHtml = query ? '' : '<div style="padding:6px 12px;font-size:0.78em;font-weight:700;color:var(--primary-teal, #0d7377);text-transform:uppercase;letter-spacing:0.5px;">⚡ Popular Notable Developers (Type to search)</div>';
+
+        dropdown.innerHTML = headerHtml + users.map((u, idx) => `
             <div class="suggestion-item" data-index="${idx}" data-login="${u.login}">
                 <img src="${u.avatar || u.avatar_url || 'https://github.com/ghost.png'}" class="suggestion-avatar" alt="${u.login}" onerror="this.src='https://github.com/ghost.png'">
                 <div class="suggestion-info">
-                    <span class="suggestion-login">${u.login} ${u.name ? '<span style="font-weight:400;font-size:0.88em;opacity:0.85;">(' + u.name + ')</span>' : ''}</span>
+                    <span class="suggestion-login">${highlightMatch(u.login, query)} ${u.name ? '<span style="font-weight:400;font-size:0.86em;opacity:0.85;">(' + u.name + ')</span>' : ''}</span>
                     <span class="suggestion-type">${u.type || 'Developer'}</span>
                 </div>
                 <span class="suggestion-badge">${badgeText}</span>
@@ -5539,49 +5657,54 @@ function bindInputAutocomplete(inputId, dropdownId, onSelect, badgeText = 'Selec
         `).join('');
 
         dropdown.querySelectorAll('.suggestion-item').forEach(item => {
-            item.addEventListener('click', (e) => {
+            const doPick = (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 const login = item.getAttribute('data-login');
                 if (login) onSelect(login);
-            });
+            };
+            item.addEventListener('mousedown', doPick);
+            item.addEventListener('click', doPick);
         });
 
+        dropdown.classList.add('visible', 'is-open');
         dropdown.style.display = 'block';
     }
 
     function handleSuggest() {
         clearTimeout(timer);
-        let query = (input.value || '').trim();
+        let raw = input.value || '';
+        let query = raw.trim();
         if (query.includes('github.com/')) {
             const parts = query.split('github.com/');
             query = (parts[1] || '').split('/')[0].split('?')[0].trim();
         }
 
+        // If query is empty, show top popular developers for easy 1-click discovery
         if (!query) {
-            dropdown.style.display = 'none';
-            dropdown.innerHTML = '';
-            activeIdx = -1;
+            renderList(POPULAR_GITHUB_USERS.slice(0, 6), '');
             return;
         }
 
         const qLower = query.toLowerCase();
-        // Instant prefix + contains match from local dictionary
-        const localMatches = POPULAR_GITHUB_USERS.filter(d =>
+        // Instant prefix matches first, then contains matches
+        const prefixMatches = POPULAR_GITHUB_USERS.filter(d =>
             d.login.toLowerCase().startsWith(qLower) ||
-            d.login.toLowerCase().includes(qLower) ||
-            (d.name && d.name.toLowerCase().includes(qLower))
+            ((d.name || '').toLowerCase().startsWith(qLower))
         );
-        const sortedLocal = rankUserSuggestions(localMatches, query);
-        if (sortedLocal.length > 0) {
-            renderList(sortedLocal);
-        }
+        const containsMatches = POPULAR_GITHUB_USERS.filter(d =>
+            !prefixMatches.includes(d) &&
+            (d.login.toLowerCase().includes(qLower) || ((d.name || '').toLowerCase().includes(qLower)))
+        );
+        const sortedLocal = [...prefixMatches, ...containsMatches];
+        renderList(sortedLocal.slice(0, 8), query);
 
-        // Live upstream search query (debounced 140ms)
+        // Live upstream search query (debounced 120ms)
         timer = setTimeout(async () => {
             try {
-                let res = await fetch(`/api/github/search/users?q=${encodeURIComponent(query)}+in:login&per_page=8`).catch(() => null);
+                let res = await fetch(`/api/github/search/users?q=${encodeURIComponent(query)}+type:user&per_page=8`).catch(() => null);
                 if (!res || !res.ok) {
-                    res = await fetch(`https://api.github.com/search/users?q=${encodeURIComponent(query)}+in:login&per_page=8`).catch(() => null);
+                    res = await fetch(`https://api.github.com/search/users?q=${encodeURIComponent(query)}+type:user&per_page=8`).catch(() => null);
                 }
                 if (!res || !res.ok) return;
                 const data = await res.json();
@@ -5599,21 +5722,20 @@ function bindInputAutocomplete(inputId, dropdownId, onSelect, badgeText = 'Selec
 
                 const ranked = rankUserSuggestions(combined, query);
                 if (ranked.length > 0) {
-                    renderList(ranked.slice(0, 8));
+                    renderList(ranked.slice(0, 8), query);
                 }
             } catch (err) {
                 console.warn('Autocomplete fetch warning:', err);
             }
-        }, 140);
+        }, 120);
     }
 
-    input.addEventListener('input', handleSuggest);
-    input.addEventListener('focus', () => {
-        if ((input.value || '').trim().length > 0) handleSuggest();
+    ['input', 'keyup', 'focus', 'paste'].forEach(evt => {
+        input.addEventListener(evt, handleSuggest);
     });
 
     input.addEventListener('keydown', (e) => {
-        if (dropdown.style.display === 'none') return;
+        if (!dropdown.classList.contains('visible') && dropdown.style.display === 'none') return;
         const items = dropdown.querySelectorAll('.suggestion-item');
         if (!items.length) return;
 
@@ -5633,12 +5755,14 @@ function bindInputAutocomplete(inputId, dropdownId, onSelect, badgeText = 'Selec
                 if (login) onSelect(login);
             }
         } else if (e.key === 'Escape') {
+            dropdown.classList.remove('visible', 'is-open');
             dropdown.style.display = 'none';
         }
     });
 
     document.addEventListener('click', (e) => {
         if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('visible', 'is-open');
             dropdown.style.display = 'none';
         }
     });
@@ -5650,9 +5774,12 @@ function setupUserAutocomplete() {
         const input = document.getElementById('githubInput');
         const dropdown = document.getElementById('userSuggestions');
         if (input) input.value = login;
-        if (dropdown) dropdown.style.display = 'none';
-        if (typeof handleAnalysis === 'function') {
-            handleAnalysis();
+        if (dropdown) {
+            dropdown.classList.remove('visible', 'is-open');
+            dropdown.style.display = 'none';
+        }
+        if (typeof window.handleAnalysis === 'function') {
+            window.handleAnalysis();
         }
     }, 'Analyze ↵');
 
@@ -5661,7 +5788,10 @@ function setupUserAutocomplete() {
         const input = document.getElementById('cmpA');
         const dropdown = document.getElementById('userSuggestions-cmpA');
         if (input) input.value = login;
-        if (dropdown) dropdown.style.display = 'none';
+        if (dropdown) {
+            dropdown.classList.remove('visible', 'is-open');
+            dropdown.style.display = 'none';
+        }
         document.getElementById('cmpB')?.focus();
     }, 'Select ↵');
 
@@ -5669,7 +5799,10 @@ function setupUserAutocomplete() {
         const input = document.getElementById('cmpB');
         const dropdown = document.getElementById('userSuggestions-cmpB');
         if (input) input.value = login;
-        if (dropdown) dropdown.style.display = 'none';
+        if (dropdown) {
+            dropdown.classList.remove('visible', 'is-open');
+            dropdown.style.display = 'none';
+        }
         const wrapC = document.getElementById('wrap-cmpC');
         const cmpC = document.getElementById('cmpC');
         if (wrapC && (wrapC.style.display === 'none' || wrapC.hidden)) {
@@ -5682,7 +5815,10 @@ function setupUserAutocomplete() {
         const input = document.getElementById('cmpC');
         const dropdown = document.getElementById('userSuggestions-cmpC');
         if (input) input.value = login;
-        if (dropdown) dropdown.style.display = 'none';
+        if (dropdown) {
+            dropdown.classList.remove('visible', 'is-open');
+            dropdown.style.display = 'none';
+        }
         const wrapD = document.getElementById('wrap-cmpD');
         const cmpD = document.getElementById('cmpD');
         if (wrapD && (wrapD.style.display === 'none' || wrapD.hidden)) {
@@ -5695,7 +5831,10 @@ function setupUserAutocomplete() {
         const input = document.getElementById('cmpD');
         const dropdown = document.getElementById('userSuggestions-cmpD');
         if (input) input.value = login;
-        if (dropdown) dropdown.style.display = 'none';
+        if (dropdown) {
+            dropdown.classList.remove('visible', 'is-open');
+            dropdown.style.display = 'none';
+        }
         const wrapE = document.getElementById('wrap-cmpE');
         const cmpE = document.getElementById('cmpE');
         if (wrapE && (wrapE.style.display === 'none' || wrapE.hidden)) {
@@ -5708,7 +5847,10 @@ function setupUserAutocomplete() {
         const input = document.getElementById('cmpE');
         const dropdown = document.getElementById('userSuggestions-cmpE');
         if (input) input.value = login;
-        if (dropdown) dropdown.style.display = 'none';
+        if (dropdown) {
+            dropdown.classList.remove('visible', 'is-open');
+            dropdown.style.display = 'none';
+        }
     }, 'Select ↵');
 }
 window.setupUserAutocomplete = setupUserAutocomplete;
@@ -5760,7 +5902,10 @@ function showToast(msg, type = 'success', duration = 3500) {
         t.style.opacity = '0';
         t.style.transform = 'translateY(10px)';
         t.style.transition = 'all 0.3s ease';
-        setTimeout(() => t.remove(), 300);
+        setTimeout(() => {
+            if (t && typeof t.remove === 'function') t.remove();
+            else if (t && t.parentNode) t.parentNode.removeChild(t);
+        }, 300);
     }, duration);
 }
 window.showToast = showToast;

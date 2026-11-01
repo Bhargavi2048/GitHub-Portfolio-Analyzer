@@ -2970,6 +2970,10 @@ body.dark .compare-desc {
     box-sizing: border-box !important;
     animation: fadeInDropdown 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
+.user-suggestions-dropdown.visible,
+.user-suggestions-dropdown.is-open {
+    display: block !important;
+}
 body.dark .user-suggestions-dropdown {
     background: #161b22 !important;
     border-color: #388bfd !important;
