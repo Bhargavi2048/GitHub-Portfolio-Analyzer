@@ -694,11 +694,26 @@
         <h3>⚖️ Compare GitHub Profiles (up to 5)</h3>
         <p class="compare-desc">Compare up to 5 developers side by side with full metrics and an interactive multi-developer radar chart.</p>
         <div class="compare-inputs" id="compareInputsWrap">
-            <input id="cmpA" placeholder="Username A (e.g. torvalds)">
-            <input id="cmpB" placeholder="Username B (e.g. gaearon)">
-            <input id="cmpC" placeholder="Username C (optional)">
-            <input id="cmpD" placeholder="Username D (optional)" style="display:none;">
-            <input id="cmpE" placeholder="Username E (optional)" style="display:none;">
+            <div class="cmp-wrap" id="wrap-cmpA">
+                <input id="cmpA" placeholder="Username A (e.g. torvalds)" autocomplete="off" spellcheck="false">
+                <div id="userSuggestions-cmpA" class="user-suggestions-dropdown" style="display:none;" role="listbox"></div>
+            </div>
+            <div class="cmp-wrap" id="wrap-cmpB">
+                <input id="cmpB" placeholder="Username B (e.g. gaearon)" autocomplete="off" spellcheck="false">
+                <div id="userSuggestions-cmpB" class="user-suggestions-dropdown" style="display:none;" role="listbox"></div>
+            </div>
+            <div class="cmp-wrap" id="wrap-cmpC">
+                <input id="cmpC" placeholder="Username C (optional)" autocomplete="off" spellcheck="false">
+                <div id="userSuggestions-cmpC" class="user-suggestions-dropdown" style="display:none;" role="listbox"></div>
+            </div>
+            <div class="cmp-wrap" id="wrap-cmpD" style="display:none;">
+                <input id="cmpD" placeholder="Username D (optional)" autocomplete="off" spellcheck="false">
+                <div id="userSuggestions-cmpD" class="user-suggestions-dropdown" style="display:none;" role="listbox"></div>
+            </div>
+            <div class="cmp-wrap" id="wrap-cmpE" style="display:none;">
+                <input id="cmpE" placeholder="Username E (optional)" autocomplete="off" spellcheck="false">
+                <div id="userSuggestions-cmpE" class="user-suggestions-dropdown" style="display:none;" role="listbox"></div>
+            </div>
             <button class="icon-btn" id="addCmpBtn" onclick="addCompareProfile()">+ Add Profile</button>
             <button class="btn-analyze" onclick="compareProfiles()">Compare Profiles</button>
         </div>

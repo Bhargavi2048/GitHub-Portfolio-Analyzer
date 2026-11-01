@@ -1087,34 +1087,7 @@ ${a.languages.slice(0,6).map(l=>`- ${l.name}: ${l.percentage}%`).join('\n')}
             if (window.GHToast) window.GHToast.success('Badge SVG downloaded!');
         };
 
-        // Compare
-        async function compareProfiles(){
-            const a = document.getElementById('cmpA').value.trim();
-            const b = document.getElementById('cmpB').value.trim();
-            const box = document.getElementById('compareResults');
-            if (!a || !b){ alert('Enter both usernames'); return; }
-            box.style.display='grid';
-            box.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Loading...</p>';
-            try {
-                const [uA, uB] = await Promise.all([fetchUserData(extractUsername(a)), fetchUserData(extractUsername(b))]);
-                const [rA, rB] = await Promise.all([fetchRepositories(uA.login), fetchRepositories(uB.login)]);
-                const anA = analyzePortfolio(uA, rA);
-                const anB = analyzePortfolio(uB, rB);
-                const winA = anA.weightedScore >= anB.weightedScore;
-                box.innerHTML = [{u:uA,r:rA,an:anA,win:winA},{u:uB,r:rB,an:anB,win:!winA}].map(x=>`
-                    <div class="compare-col ${x.win?'winner':''}">
-                        <img src="${x.u.avatar_url}" alt="">
-                        <h4>${x.u.name || x.u.login}</h4>
-                        <p style="color:#666;font-size:.9em;">@${x.u.login}</p>
-                        <div class="big">${x.an.weightedScore}</div>
-                        <p>⭐ ${x.r.reduce((s,r)=>s+r.stargazers_count,0)} stars · ${x.r.filter(r=>!r.fork).length} repos</p>
-                        <p>👥 ${x.u.followers} followers</p>
-                    </div>
-                `).join('');
-            } catch(e){
-                box.innerHTML = '<p style="grid-column:1/-1;color:var(--error);text-align:center;">'+e.message+'</p>';
-            }
-        }
+        // Compare profiles handled by modern multi-profile function at window.compareProfiles
 
         // Keyboard shortcut
         document.addEventListener('keydown', e=>{
@@ -3854,83 +3827,6 @@ async function runAISkillGap() {
     }
 }
 
-// --- COMPARE x4 ---
-let _compareProfileCount = 3; // existing: A, B, C
-
-function addCompareProfile() {
-    if (_compareProfileCount >= 4) {
-        if (window.GHToast) window.GHToast.warning('Maximum 4 profiles supported');
-        return;
-    }
-    _compareProfileCount++;
-    const input = document.getElementById('cmpD');
-    if (input) {
-        input.style.display = '';
-        input.placeholder = 'Username D (optional)';
-    }
-    const addBtn = document.getElementById('addCmpBtn');
-    if (addBtn) addBtn.style.display = 'none'; // max reached
-}
-
-// Patch compareProfiles to handle 4 profiles
-function patchCompare4() {
-    const orig = window.compareProfiles;
-    if (!orig || orig.__patched4) return;
-    window.compareProfiles = async function() {
-        const a = (document.getElementById('cmpA')||{}).value?.trim();
-        const b = (document.getElementById('cmpB')||{}).value?.trim();
-        const c = (document.getElementById('cmpC')||{}).value?.trim();
-        const d = (document.getElementById('cmpD')||{}).value?.trim();
-        if (!a || !b) { if(window.GHToast) window.GHToast.warning('Enter at least two usernames'); return; }
-
-        const box = document.getElementById('compareResults');
-        const radarWrap = document.getElementById('compareRadarWrap');
-        if(!box) return;
-
-        const extras = [c, d].filter(Boolean);
-        const count = 2 + extras.length;
-        box.style.display = 'grid';
-        box.className = 'compare-results' + (count >= 3 ? ' three-col' : '');
-        box.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:20px;">⏳ Loading comparison...</p>';
-        if(radarWrap) radarWrap.style.display = 'none';
-
-        try {
-            const targets = [a, b, ...extras];
-            const results = await Promise.all(targets.map(u =>
-                fetch(`/api/public/${encodeURIComponent(u)}`).then(r=>r.json())
-            ));
-
-            const colors = ['var(--primary-teal)', 'var(--light-teal)', 'var(--accent-teal)', '#f5a623'];
-            const pillars = ['activity','quality','impact','diversity','documentation'];
-            const pillarEmoji = {'activity':'⚡','quality':'🏆','impact':'🚀','diversity':'🎨','documentation':'📝'};
-            const maxScore = Math.max(...results.map(r=>r.score?.total||0));
-
-            box.innerHTML = results.map((r, idx) => {
-                const isWinner = (r.score?.total||0) === maxScore && idx === results.findIndex(x=>(x.score?.total||0)===maxScore);
-                const profile = r.profile || {};
-                return `<div class="compare-col${isWinner?' winner':''}">
-                    <img src="${profile.avatar_url||''}" alt="${profile.login||r.username}" style="width:70px;height:70px;border-radius:50%;margin:10px auto;display:block;">
-                    <h4 style="color:${colors[idx]}">${profile.name||profile.login||r.username}</h4>
-                    <p style="color:#888;font-size:.85em;">@${r.username}</p>
-                    <div class="big" style="color:${colors[idx]}">${r.score?.total||0}</div>
-                    <p style="font-size:.9em;color:#666;">${r.score?.rank||'?'}-Rank</p>
-                    <p style="font-size:.85em;margin-top:8px;">⭐ ${r.stats?.totalStars||0} stars · 📦 ${(r.stats?.topRepos||[]).length} repos</p>
-                    <div style="margin-top:12px;text-align:left;">
-                        ${pillars.map(p=>`<div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:.82em;">
-                            <span>${pillarEmoji[p]} ${p}</span><span style="font-weight:700;color:${colors[idx]}">${r.score?.pillars?.[p]||0}</span>
-                        </div>`).join('')}
-                    </div>
-                    ${isWinner?'<div style="margin-top:10px;background:var(--primary-teal);color:white;padding:4px 0;border-radius:6px;text-align:center;font-size:.82em;">🏆 Winner</div>':''}
-                </div>`;
-            }).join('');
-            box.style.display = 'grid';
-        } catch(e) {
-            box.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--error)">Error loading comparison</p>`;
-        }
-    };
-    window.compareProfiles.__patched4 = true;
-}
-
 function closeAllNewModals() {
     ['embedCardModal'].forEach(id => {
         const el = document.getElementById(id);
@@ -4006,8 +3902,6 @@ function initV22() {
     handleOAuthQueryParams();
     // Restore auth from localStorage
     restoreAuthFromStorage();
-    // Patch compare for 4 profiles after a tick so window.compareProfiles is defined
-    setTimeout(patchCompare4, 500);
 }
 
 if(document.readyState === 'loading') {
@@ -5550,7 +5444,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ─── Instant & Live GitHub User Autocomplete Suggestions ─── */
-const TOP_DEV_SUGGESTIONS = [
+const POPULAR_GITHUB_USERS = [
     { login: 'torvalds', name: 'Linus Torvalds', type: 'Linux & Git Creator', avatar: 'https://avatars.githubusercontent.com/u/1024025?v=4' },
     { login: 'gaearon', name: 'Dan Abramov', type: 'React & Redux Core', avatar: 'https://avatars.githubusercontent.com/u/810438?v=4' },
     { login: 'sindresorhus', name: 'Sindre Sorhus', type: 'Prolific OSS Creator', avatar: 'https://avatars.githubusercontent.com/u/170270?v=4' },
@@ -5559,84 +5453,143 @@ const TOP_DEV_SUGGESTIONS = [
     { login: 'antirez', name: 'Salvatore Sanfilippo', type: 'Redis Creator', avatar: 'https://avatars.githubusercontent.com/u/65632?v=4' },
     { login: 'addyosmani', name: 'Addy Osmani', type: 'Chrome Engineering Lead', avatar: 'https://avatars.githubusercontent.com/u/110953?v=4' },
     { login: 'kentcdodds', name: 'Kent C. Dodds', type: 'Testing Library & Remix', avatar: 'https://avatars.githubusercontent.com/u/1500684?v=4' },
-    { login: 'rauchg', name: 'Guillermo Rauch', type: 'Vercel & Next.js', avatar: 'https://avatars.githubusercontent.com/u/13041?v=4' },
+    { login: 'rauchg', name: 'Guillermo Rauch', type: 'Vercel & Next.js CEO', avatar: 'https://avatars.githubusercontent.com/u/13041?v=4' },
     { login: 'rich-harris', name: 'Rich Harris', type: 'Svelte & Rollup Creator', avatar: 'https://avatars.githubusercontent.com/u/1162160?v=4' },
     { login: 'mitchellh', name: 'Mitchell Hashimoto', type: 'HashiCorp & Ghostty', avatar: 'https://avatars.githubusercontent.com/u/1299?v=4' },
-    { login: 'ry', name: 'Ryan Dahl', type: 'Node.js & Deno Creator', avatar: 'https://avatars.githubusercontent.com/u/80?v=4' }
+    { login: 'ry', name: 'Ryan Dahl', type: 'Node.js & Deno Creator', avatar: 'https://avatars.githubusercontent.com/u/80?v=4' },
+    { login: 'bhargavi2048-boop', name: 'Bhargavi', type: 'Project Author', avatar: 'https://avatars.githubusercontent.com/u/157924618?v=4' },
+    { login: 'brendaneich', name: 'Brendan Eich', type: 'JavaScript Creator & Brave', avatar: 'https://avatars.githubusercontent.com/u/111440?v=4' },
+    { login: 'bradtraversy', name: 'Brad Traversy', type: 'Traversy Media Educator', avatar: 'https://avatars.githubusercontent.com/u/5550850?v=4' },
+    { login: 'bkeepers', name: 'Brandon Keepers', type: 'GitHub Engineering', avatar: 'https://avatars.githubusercontent.com/u/3173?v=4' },
+    { login: 'defunkt', name: 'Chris Wanstrath', type: 'GitHub Co-Founder', avatar: 'https://avatars.githubusercontent.com/u/2?v=4' },
+    { login: 'dhh', name: 'David Heinemeier Hansson', type: 'Rails & 37signals', avatar: 'https://avatars.githubusercontent.com/u/2741?v=4' },
+    { login: 'developit', name: 'Jason Miller', type: 'Preact Creator', avatar: 'https://avatars.githubusercontent.com/u/105127?v=4' },
+    { login: 'dan', name: 'Dan', type: 'Open Source Dev', avatar: 'https://avatars.githubusercontent.com/u/10?v=4' },
+    { login: 'chriseppstein', name: 'Chris Eppstein', type: 'Compass & Sass', avatar: 'https://avatars.githubusercontent.com/u/451?v=4' },
+    { login: 'cpojer', name: 'Christoph Nakazawa', type: 'Jest & React Native Lead', avatar: 'https://avatars.githubusercontent.com/u/13352?v=4' },
+    { login: 'feross', name: 'Feross Aboukhadijeh', type: 'WebTorrent & Socket.dev', avatar: 'https://avatars.githubusercontent.com/u/121766?v=4' },
+    { login: 'fabpot', name: 'Fabien Potencier', type: 'Symfony Creator', avatar: 'https://avatars.githubusercontent.com/u/47313?v=4' },
+    { login: 'getify', name: 'Kyle Simpson', type: 'You Don\'t Know JS', avatar: 'https://avatars.githubusercontent.com/u/150330?v=4' },
+    { login: 'hakimel', name: 'Hakim El Hattab', type: 'reveal.js & Hakim.se', avatar: 'https://avatars.githubusercontent.com/u/83649?v=4' },
+    { login: 'holman', name: 'Zach Holman', type: 'Early GitHub Engineer', avatar: 'https://avatars.githubusercontent.com/u/2723?v=4' },
+    { login: 'isaacs', name: 'Isaac Z. Schlueter', type: 'npm Creator', avatar: 'https://avatars.githubusercontent.com/u/9287?v=4' },
+    { login: 'jashkenas', name: 'Jeremy Ashkenas', type: 'Backbone & CoffeeScript', avatar: 'https://avatars.githubusercontent.com/u/11116?v=4' },
+    { login: 'kelseyhightower', name: 'Kelsey Hightower', type: 'Kubernetes Pioneer', avatar: 'https://avatars.githubusercontent.com/u/410038?v=4' },
+    { login: 'lea-verou', name: 'Lea Verou', type: 'W3C & CSS Secrets', avatar: 'https://avatars.githubusercontent.com/u/175836?v=4' },
+    { login: 'mitsuhiko', name: 'Armin Ronacher', type: 'Flask & Sentry Creator', avatar: 'https://avatars.githubusercontent.com/u/7396?v=4' },
+    { login: 'mrdoob', name: 'Ricardo Cabello', type: 'three.js Creator', avatar: 'https://avatars.githubusercontent.com/u/97088?v=4' },
+    { login: 'mikeal', name: 'Mikeal Rogers', type: 'Request & Node.js Leader', avatar: 'https://avatars.githubusercontent.com/u/179?v=4' },
+    { login: 'nate-parrott', name: 'Nate Parrott', type: 'Design Engineer', avatar: 'https://avatars.githubusercontent.com/u/1324707?v=4' },
+    { login: 'orta', name: 'Orta Therox', type: 'TypeScript & CocoaPods', avatar: 'https://avatars.githubusercontent.com/u/49038?v=4' },
+    { login: 'paulirish', name: 'Paul Irish', type: 'Chrome DevTools Lead', avatar: 'https://avatars.githubusercontent.com/u/39191?v=4' },
+    { login: 'remy', name: 'Remy Sharp', type: 'nodemon & JS Bin Creator', avatar: 'https://avatars.githubusercontent.com/u/4154?v=4' },
+    { login: 'shadcn', name: 'shadcn', type: 'shadcn/ui Creator', avatar: 'https://avatars.githubusercontent.com/u/124599?v=4' },
+    { login: 'sebmarkbage', name: 'Sebastian Markbåge', type: 'React Architect', avatar: 'https://avatars.githubusercontent.com/u/63648?v=4' },
+    { login: 'wesbos', name: 'Wes Bos', type: 'Full Stack Educator', avatar: 'https://avatars.githubusercontent.com/u/176013?v=4' },
+    { login: 'willmcgugan', name: 'Will McGugan', type: 'Rich & Textualize', avatar: 'https://avatars.githubusercontent.com/u/554369?v=4' },
+    { login: 'zellwk', name: 'Zell Liew', type: 'CSS & JS Educator', avatar: 'https://avatars.githubusercontent.com/u/3607481?v=4' }
 ];
 
-let autocompleteTimer = null;
-let activeSuggestionIndex = -1;
+function rankUserSuggestions(users, query) {
+    const q = (query || '').toLowerCase().trim();
+    if (!q) return users;
+    return [...users].sort((a, b) => {
+        const aLog = (a.login || '').toLowerCase();
+        const bLog = (b.login || '').toLowerCase();
+        const aStarts = aLog.startsWith(q);
+        const bStarts = bLog.startsWith(q);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
 
-function renderUserSuggestions(users) {
-    const dropdown = document.getElementById('userSuggestions');
-    if (!dropdown) return;
-    if (!users || !users.length) {
-        dropdown.innerHTML = '<div style="padding:12px 14px;color:#475569;font-size:0.92em;font-weight:600;text-align:left;">No matching GitHub profiles found</div>';
-        dropdown.style.display = 'block';
-        return;
-    }
-    activeSuggestionIndex = -1;
-    dropdown.innerHTML = users.map((u, idx) => `
-        <div class="suggestion-item" data-index="${idx}" data-login="${u.login}" onclick="selectUserSuggestion('${u.login}')">
-            <img src="${u.avatar || u.avatar_url || 'https://github.com/ghost.png'}" class="suggestion-avatar" alt="${u.login}" onerror="this.src='https://github.com/ghost.png'">
-            <div class="suggestion-info">
-                <span class="suggestion-login">${u.login} ${u.name ? '<span style="font-weight:400;font-size:0.88em;opacity:0.85;">(' + u.name + ')</span>' : ''}</span>
-                <span class="suggestion-type">${u.type || 'Developer'}</span>
-            </div>
-            <span class="suggestion-badge">Analyze ↵</span>
-        </div>
-    `).join('');
-    dropdown.style.display = 'block';
+        const aNameStarts = ((a.name || '').toLowerCase()).startsWith(q);
+        const bNameStarts = ((b.name || '').toLowerCase()).startsWith(q);
+        if (aNameStarts && !bNameStarts) return -1;
+        if (!aNameStarts && bNameStarts) return 1;
+
+        return aLog.localeCompare(bLog);
+    });
 }
 
-function setupUserAutocomplete() {
-    const input = document.getElementById('githubInput');
-    const dropdown = document.getElementById('userSuggestions');
+function bindInputAutocomplete(inputId, dropdownId, onSelect, badgeText = 'Select ↵') {
+    const input = document.getElementById(inputId);
+    const dropdown = document.getElementById(dropdownId);
     if (!input || !dropdown) return;
     if (input._autocompleteBound) return;
     input._autocompleteBound = true;
 
+    let timer = null;
+    let activeIdx = -1;
+
+    function renderList(users) {
+        if (!users || !users.length) {
+            dropdown.innerHTML = '<div style="padding:10px 14px;color:#475569;font-size:0.9em;font-weight:600;">No matching profiles found</div>';
+            dropdown.style.display = 'block';
+            return;
+        }
+        activeIdx = -1;
+        dropdown.innerHTML = users.map((u, idx) => `
+            <div class="suggestion-item" data-index="${idx}" data-login="${u.login}">
+                <img src="${u.avatar || u.avatar_url || 'https://github.com/ghost.png'}" class="suggestion-avatar" alt="${u.login}" onerror="this.src='https://github.com/ghost.png'">
+                <div class="suggestion-info">
+                    <span class="suggestion-login">${u.login} ${u.name ? '<span style="font-weight:400;font-size:0.88em;opacity:0.85;">(' + u.name + ')</span>' : ''}</span>
+                    <span class="suggestion-type">${u.type || 'Developer'}</span>
+                </div>
+                <span class="suggestion-badge">${badgeText}</span>
+            </div>
+        `).join('');
+
+        dropdown.querySelectorAll('.suggestion-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const login = item.getAttribute('data-login');
+                if (login) onSelect(login);
+            });
+        });
+
+        dropdown.style.display = 'block';
+    }
+
     function handleSuggest() {
-        clearTimeout(autocompleteTimer);
-        const raw = (input.value || '').trim();
-        let query = raw;
+        clearTimeout(timer);
+        let query = (input.value || '').trim();
         if (query.includes('github.com/')) {
             const parts = query.split('github.com/');
             query = (parts[1] || '').split('/')[0].split('?')[0].trim();
         }
 
-        if (!query || query.length === 0) {
+        if (!query) {
             dropdown.style.display = 'none';
             dropdown.innerHTML = '';
-            activeSuggestionIndex = -1;
+            activeIdx = -1;
             return;
         }
 
-        // Instant local match (0ms latency response)
         const qLower = query.toLowerCase();
-        const localMatches = TOP_DEV_SUGGESTIONS.filter(d => 
-            d.login.toLowerCase().includes(qLower) || d.name.toLowerCase().includes(qLower)
+        // Instant prefix + contains match from local dictionary
+        const localMatches = POPULAR_GITHUB_USERS.filter(d =>
+            d.login.toLowerCase().startsWith(qLower) ||
+            d.login.toLowerCase().includes(qLower) ||
+            (d.name && d.name.toLowerCase().includes(qLower))
         );
-        if (localMatches.length > 0) {
-            renderUserSuggestions(localMatches);
+        const sortedLocal = rankUserSuggestions(localMatches, query);
+        if (sortedLocal.length > 0) {
+            renderList(sortedLocal);
         }
 
-        // Live upstream search query (debounced 160ms)
-        autocompleteTimer = setTimeout(async () => {
+        // Live upstream search query (debounced 140ms)
+        timer = setTimeout(async () => {
             try {
-                let res = await fetch(`/api/github/search/users?q=${encodeURIComponent(query)}+in:login&per_page=6`).catch(() => null);
+                let res = await fetch(`/api/github/search/users?q=${encodeURIComponent(query)}+in:login&per_page=8`).catch(() => null);
                 if (!res || !res.ok) {
-                    res = await fetch(`https://api.github.com/search/users?q=${encodeURIComponent(query)}+in:login&per_page=6`).catch(() => null);
+                    res = await fetch(`https://api.github.com/search/users?q=${encodeURIComponent(query)}+in:login&per_page=8`).catch(() => null);
                 }
                 if (!res || !res.ok) return;
                 const data = await res.json();
                 const upstreamItems = (data && data.items) || [];
-                
-                // Merge local + upstream items (dedup by login)
+
                 const seen = new Set();
                 const combined = [];
-                [...localMatches, ...upstreamItems].forEach(item => {
+                [...sortedLocal, ...upstreamItems].forEach(item => {
                     const l = (item.login || '').toLowerCase();
                     if (l && !seen.has(l)) {
                         seen.add(l);
@@ -5644,13 +5597,14 @@ function setupUserAutocomplete() {
                     }
                 });
 
-                if (combined.length > 0) {
-                    renderUserSuggestions(combined.slice(0, 7));
+                const ranked = rankUserSuggestions(combined, query);
+                if (ranked.length > 0) {
+                    renderList(ranked.slice(0, 8));
                 }
             } catch (err) {
-                console.warn('Suggestions fetch warning:', err);
+                console.warn('Autocomplete fetch warning:', err);
             }
-        }, 160);
+        }, 140);
     }
 
     input.addEventListener('input', handleSuggest);
@@ -5665,18 +5619,18 @@ function setupUserAutocomplete() {
 
         if (e.key === 'ArrowDown') {
             e.preventDefault();
-            activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
-            items.forEach((it, i) => it.classList.toggle('active', i === activeSuggestionIndex));
+            activeIdx = (activeIdx + 1) % items.length;
+            items.forEach((it, i) => it.classList.toggle('active', i === activeIdx));
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
-            items.forEach((it, i) => it.classList.toggle('active', i === activeSuggestionIndex));
-        } else if (e.key === 'Enter' && activeSuggestionIndex >= 0) {
+            activeIdx = (activeIdx - 1 + items.length) % items.length;
+            items.forEach((it, i) => it.classList.toggle('active', i === activeIdx));
+        } else if (e.key === 'Enter' && activeIdx >= 0) {
             e.preventDefault();
-            const selected = items[activeSuggestionIndex];
+            const selected = items[activeIdx];
             if (selected) {
                 const login = selected.getAttribute('data-login');
-                if (login) selectUserSuggestion(login);
+                if (login) onSelect(login);
             }
         } else if (e.key === 'Escape') {
             dropdown.style.display = 'none';
@@ -5690,16 +5644,73 @@ function setupUserAutocomplete() {
     });
 }
 
-function selectUserSuggestion(login) {
-    const input = document.getElementById('githubInput');
-    const dropdown = document.getElementById('userSuggestions');
-    if (input) input.value = login;
-    if (dropdown) dropdown.style.display = 'none';
-    if (typeof handleAnalysis === 'function') {
-        handleAnalysis();
-    }
+function setupUserAutocomplete() {
+    // 1. Main Profile Input
+    bindInputAutocomplete('githubInput', 'userSuggestions', (login) => {
+        const input = document.getElementById('githubInput');
+        const dropdown = document.getElementById('userSuggestions');
+        if (input) input.value = login;
+        if (dropdown) dropdown.style.display = 'none';
+        if (typeof handleAnalysis === 'function') {
+            handleAnalysis();
+        }
+    }, 'Analyze ↵');
+
+    // 2. Compare Inputs: cmpA through cmpE
+    bindInputAutocomplete('cmpA', 'userSuggestions-cmpA', (login) => {
+        const input = document.getElementById('cmpA');
+        const dropdown = document.getElementById('userSuggestions-cmpA');
+        if (input) input.value = login;
+        if (dropdown) dropdown.style.display = 'none';
+        document.getElementById('cmpB')?.focus();
+    }, 'Select ↵');
+
+    bindInputAutocomplete('cmpB', 'userSuggestions-cmpB', (login) => {
+        const input = document.getElementById('cmpB');
+        const dropdown = document.getElementById('userSuggestions-cmpB');
+        if (input) input.value = login;
+        if (dropdown) dropdown.style.display = 'none';
+        const wrapC = document.getElementById('wrap-cmpC');
+        const cmpC = document.getElementById('cmpC');
+        if (wrapC && (wrapC.style.display === 'none' || wrapC.hidden)) {
+            wrapC.style.display = '';
+        }
+        cmpC?.focus();
+    }, 'Select ↵');
+
+    bindInputAutocomplete('cmpC', 'userSuggestions-cmpC', (login) => {
+        const input = document.getElementById('cmpC');
+        const dropdown = document.getElementById('userSuggestions-cmpC');
+        if (input) input.value = login;
+        if (dropdown) dropdown.style.display = 'none';
+        const wrapD = document.getElementById('wrap-cmpD');
+        const cmpD = document.getElementById('cmpD');
+        if (wrapD && (wrapD.style.display === 'none' || wrapD.hidden)) {
+            wrapD.style.display = '';
+            cmpD?.focus();
+        }
+    }, 'Select ↵');
+
+    bindInputAutocomplete('cmpD', 'userSuggestions-cmpD', (login) => {
+        const input = document.getElementById('cmpD');
+        const dropdown = document.getElementById('userSuggestions-cmpD');
+        if (input) input.value = login;
+        if (dropdown) dropdown.style.display = 'none';
+        const wrapE = document.getElementById('wrap-cmpE');
+        const cmpE = document.getElementById('cmpE');
+        if (wrapE && (wrapE.style.display === 'none' || wrapE.hidden)) {
+            wrapE.style.display = '';
+            cmpE?.focus();
+        }
+    }, 'Select ↵');
+
+    bindInputAutocomplete('cmpE', 'userSuggestions-cmpE', (login) => {
+        const input = document.getElementById('cmpE');
+        const dropdown = document.getElementById('userSuggestions-cmpE');
+        if (input) input.value = login;
+        if (dropdown) dropdown.style.display = 'none';
+    }, 'Select ↵');
 }
-window.selectUserSuggestion = selectUserSuggestion;
 window.setupUserAutocomplete = setupUserAutocomplete;
 
 // Ensure setup runs in all environments
@@ -5720,7 +5731,7 @@ function triggerStartupNotifications() {
         showToast("⚡ GitHub API: 5,000 req/hr rate limit connected & active.", "success", 4500);
     }, 2200);
     setTimeout(() => {
-        showToast("💡 Pro-tip: Press Ctrl+K to search • Compare up to 3 developers anytime.", "info", 5500);
+        showToast("💡 Pro-tip: Press Ctrl+K to search • Compare up to 5 developers anytime.", "info", 5500);
     }, 3800);
 }
 
@@ -5776,20 +5787,23 @@ window.runUsername = runUsername;
 
 /* ─── Add Profile to Compare (Supports up to 5 profiles: A, B, C, D, E) ─── */
 function addCompareProfile() {
+    const wrapC = document.getElementById('wrap-cmpC');
+    const wrapD = document.getElementById('wrap-cmpD');
+    const wrapE = document.getElementById('wrap-cmpE');
     const cmpC = document.getElementById('cmpC');
     const cmpD = document.getElementById('cmpD');
     const cmpE = document.getElementById('cmpE');
     const btn = document.getElementById('addCmpBtn');
     
-    if (cmpC && (cmpC.style.display === 'none' || !cmpC.offsetParent)) {
-        cmpC.style.display = '';
-        cmpC.focus();
-    } else if (cmpD && (cmpD.style.display === 'none' || !cmpD.offsetParent)) {
-        cmpD.style.display = '';
-        cmpD.focus();
-    } else if (cmpE && (cmpE.style.display === 'none' || !cmpE.offsetParent)) {
-        cmpE.style.display = '';
-        cmpE.focus();
+    if (wrapC && (wrapC.style.display === 'none' || !wrapC.offsetParent)) {
+        wrapC.style.display = '';
+        if (cmpC) cmpC.focus();
+    } else if (wrapD && (wrapD.style.display === 'none' || !wrapD.offsetParent)) {
+        wrapD.style.display = '';
+        if (cmpD) cmpD.focus();
+    } else if (wrapE && (wrapE.style.display === 'none' || !wrapE.offsetParent)) {
+        wrapE.style.display = '';
+        if (cmpE) cmpE.focus();
         if (btn) btn.style.display = 'none';
     }
 }
@@ -6087,7 +6101,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 /* ─── Compare up to 5 Profiles with True Winner & Multi-Radar ─── */
-let _compareRadarChartInstance = null;
+window._compareRadarChartInstance = null;
 
 async function compareProfiles() {
     const inputs = ['cmpA', 'cmpB', 'cmpC', 'cmpD', 'cmpE'];
@@ -6194,9 +6208,13 @@ window.compareProfiles = compareProfiles;
 function renderMultiCompareRadar(devData) {
     const canvas = document.getElementById('compareRadarCanvas');
     if (!canvas || !window.Chart) return;
-    if (_compareRadarChartInstance) {
-        _compareRadarChartInstance.destroy();
-        _compareRadarChartInstance = null;
+    if (window._compareRadarChartInstance) {
+        try {
+            window._compareRadarChartInstance.destroy();
+        } catch (e) {
+            console.warn('Destroy radar warning:', e);
+        }
+        window._compareRadarChartInstance = null;
     }
 
     const radarColors = [
@@ -6232,7 +6250,7 @@ function renderMultiCompareRadar(devData) {
     const gridColor = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)';
     const textColor = isDark ? '#cbd5e1' : '#334155';
 
-    _compareRadarChartInstance = new Chart(canvas, {
+    window._compareRadarChartInstance = new Chart(canvas, {
         type: 'radar',
         data: { labels, datasets },
         options: {
