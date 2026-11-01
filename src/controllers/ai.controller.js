@@ -1,4 +1,4 @@
-const { analyzeWithAI } = require("../services/ai.service");
+const { analyzeWithAI, evaluateDeepCodeQuality } = require("../services/ai.service");
 
 exports.feedback = async (req, res, next) => {
   try {
@@ -31,25 +31,40 @@ Respond ONLY with valid JSON (no markdown) in this exact shape:
   "nextSteps": ["Step 1","Step 2","Step 3"]
 }`;
 
-    const { analyzeWithAI } = require("../services/ai.service");
-    // Call OpenAI or fall back to structured mock
+    // Call OpenAI or Gemini or fall back to structured mock
     let result;
     try {
-      const openaiKey = process.env.OPENAI_API_KEY;
-      if (!openaiKey) throw new Error("No OpenAI key");
-      const oRes = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${openaiKey}` },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 600,
-          temperature: 0.7,
-        }),
-      });
-      const oData = await oRes.json();
-      const text = oData.choices?.[0]?.message?.content || "{}";
-      result = JSON.parse(text.replace(/```json|```/g, "").trim());
+      if (process.env.GEMINI_API_KEY) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+        const gRes = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json" },
+          }),
+        });
+        const gData = await gRes.json();
+        const text = gData.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+        result = JSON.parse(text.replace(/```json|```/g, "").trim());
+      } else if (process.env.OPENAI_API_KEY) {
+        const openaiKey = process.env.OPENAI_API_KEY;
+        const oRes = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${openaiKey}` },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 600,
+            temperature: 0.7,
+          }),
+        });
+        const oData = await oRes.json();
+        const text = oData.choices?.[0]?.message?.content || "{}";
+        result = JSON.parse(text.replace(/```json|```/g, "").trim());
+      } else {
+        throw new Error("No AI key");
+      }
     } catch {
       // Fallback: role-based static suggestions
       const roleMap = {
@@ -62,4 +77,20 @@ Respond ONLY with valid JSON (no markdown) in this exact shape:
 
     res.json(result);
   } catch (e) { next(e); }
+};
+
+/**
+ * Deep AI Code Quality Review Endpoint
+ * Evaluates commit message hygiene, architecture, code style, and PR collaboration.
+ */
+exports.deepCodeReview = async (req, res, next) => {
+  try {
+    const { username, repo } = req.body || {};
+    if (!username) return res.status(400).json({ error: "Username is required" });
+
+    const review = await evaluateDeepCodeQuality(username, repo);
+    res.json(review);
+  } catch (e) {
+    next(e);
+  }
 };

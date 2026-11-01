@@ -3,7 +3,7 @@ const logger = require("../utils/logger");
 const schema = {
   required: ["JWT_SECRET"],
   recommended: [
-    "JWT_REFRESH_SECRET", "GITHUB_TOKEN", "OPENAI_API_KEY",
+    "JWT_REFRESH_SECRET", "GITHUB_TOKEN", "GEMINI_API_KEY", "OPENAI_API_KEY",
     "CORS_ORIGIN", "REDIS_URL", "GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET",
     "SMTP_HOST", "SENTRY_DSN",
   ],

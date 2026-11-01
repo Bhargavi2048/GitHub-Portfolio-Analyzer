@@ -14,7 +14,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 
-    <link rel="stylesheet" href="style.css?v=2.5.0">
+    <link rel="stylesheet" href="style.css?v=2.6.0">
 </head>
 <body>
 
@@ -514,6 +514,30 @@
             </div>
 
                 <div id="tab-ai" class="tab-pane">
+                    <!-- ===== 🔬 Deep AI Code Quality Review (Powered by Gemini API) ===== -->
+                    <div class="language-section" id="deepAiCodeReviewSection" style="margin-top:20px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
+                            <div>
+                                <h3 style="margin-bottom:4px;color:var(--primary-teal);">🔬 Deep AI Code Quality Review</h3>
+                                <p class="section-desc" style="margin-bottom:0;">Automated audit of commit message hygiene, code style, CI/CD maturity, and architectural patterns.</p>
+                            </div>
+                            <div id="geminiEngineBadge" class="ai-provider-badge">⚡ Powered by Google Gemini 1.5 Flash</div>
+                        </div>
+
+                        <div style="margin:16px 0 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                            <button class="btn-analyze" id="runDeepCodeReviewBtn" onclick="runDeepAICodeReview()" style="padding:10px 22px;">
+                                🤖 Run Deep Code Quality Review
+                            </button>
+                            <span id="deepCodeReviewStatus" style="font-size:0.9em;color:var(--text-muted, #64748b);">Inspects live commit messages, Conventional Commits & repository architecture</span>
+                        </div>
+
+                        <div id="deepCodeReviewLoading" style="display:none;text-align:center;padding:28px 20px;">
+                            <div class="spinner" style="margin:0 auto 12px;"></div>
+                            <p style="color:var(--primary-teal);font-weight:600;">Analyzing commits, pull requests, and codebase patterns with Google Gemini...</p>
+                        </div>
+
+                        <div id="deepCodeReviewResults" style="display:none;"></div>
+                    </div>
                     <div class="ai-insights-section reveal" id="aiSection" style="display:none;">
                 <h3>🧠 AI-Style Portfolio Insights</h3>
                 <div class="recruiter-impression" id="recruiterImpression">
@@ -884,7 +908,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=2.5.0"></script>
+    <script src="app.js?v=2.6.0"></script>
     <script src="enterprise-features.js"></script>
     <div id="toast-container" class="toast-container"></div>
 </body>

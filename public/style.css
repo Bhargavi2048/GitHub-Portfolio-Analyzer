@@ -3614,3 +3614,108 @@ body.dark .compare-pillar-row {
 body.dark .compare-pillar-row strong {
     color: #f1f5f9 !important;
 }
+
+
+/* ─── Deep AI Code Quality Review (Gemini API) ─── */
+.ai-provider-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.85em;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    transition: all 0.3s ease;
+}
+.ai-provider-badge.active {
+    background: linear-gradient(135deg, rgba(13, 115, 119, 0.15), rgba(20, 145, 155, 0.2));
+    color: var(--primary-teal, #0d7377);
+    border-color: var(--accent-teal, #76c7d1);
+}
+body.dark .ai-provider-badge {
+    background: #161b22;
+    border-color: #30363d;
+    color: #94a3b8;
+}
+body.dark .ai-provider-badge.active {
+    background: rgba(13, 115, 119, 0.25);
+    border-color: #388bfd;
+    color: #58a6ff;
+}
+
+.code-gauge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 18px 0;
+}
+.code-gauge-card {
+    background: var(--bg-card, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+body.dark .code-gauge-card {
+    background: #161b22;
+    border-color: #30363d;
+}
+.code-gauge-val {
+    font-size: 2.2em;
+    font-weight: 800;
+    color: var(--primary-teal, #0d7377);
+    line-height: 1;
+    margin: 8px 0 4px;
+}
+.code-gauge-lbl {
+    font-size: 0.82em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted, #64748b);
+}
+.code-gauge-sub {
+    font-size: 0.82em;
+    color: var(--text-dark, #334155);
+    margin-top: 6px;
+    line-height: 1.4;
+}
+body.dark .code-gauge-sub {
+    color: #cbd5e1;
+}
+
+.review-box {
+    background: #f8fafc;
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-teal, #0d7377);
+    padding: 16px 20px;
+    margin-bottom: 14px;
+}
+body.dark .review-box {
+    background: #0d1117;
+    border-color: #388bfd;
+}
+.review-box h4 {
+    margin: 0 0 6px 0;
+    color: var(--primary-teal, #0d7377);
+    font-size: 1em;
+}
+body.dark .review-box h4 {
+    color: #58a6ff;
+}
+
+.suggested-project-card {
+    background: linear-gradient(135deg, rgba(13, 115, 119, 0.06), rgba(20, 145, 155, 0.08));
+    border: 1px dashed var(--primary-teal, #0d7377);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-top: 18px;
+}
+body.dark .suggested-project-card {
+    background: #161b22;
+    border-color: #388bfd;
+}

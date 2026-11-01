@@ -199,4 +199,39 @@ async function analyze(username) {
   };
 }
 
-module.exports = { gh, fetchProfile, fetchRepos, analyze, cache, computeScore };
+async function fetchRepoCommits(username, repoName, limit = 15) {
+  try {
+    const commits = await gh(`/repos/${encodeURIComponent(username)}/${encodeURIComponent(repoName)}/commits?per_page=${limit}`);
+    return Array.isArray(commits)
+      ? commits.map((c) => ({
+          sha: c.sha ? c.sha.slice(0, 7) : "",
+          message: c.commit?.message || "",
+          author: c.commit?.author?.name || c.author?.login || "",
+          date: c.commit?.author?.date || "",
+          verified: !!c.commit?.verification?.verified,
+        }))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+async function fetchRepoPulls(username, repoName, limit = 10) {
+  try {
+    const pulls = await gh(`/repos/${encodeURIComponent(username)}/${encodeURIComponent(repoName)}/pulls?state=all&per_page=${limit}`);
+    return Array.isArray(pulls)
+      ? pulls.map((p) => ({
+          id: p.number,
+          title: p.title,
+          state: p.state,
+          hasBody: !!(p.body && p.body.length > 30),
+          comments: p.comments || 0,
+          created_at: p.created_at,
+        }))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+module.exports = { gh, fetchProfile, fetchRepos, fetchRepoCommits, fetchRepoPulls, analyze, cache, computeScore };
