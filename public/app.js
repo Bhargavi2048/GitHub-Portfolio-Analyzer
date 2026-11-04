@@ -401,8 +401,7 @@
         }
 
         function extractUsername(input) {
-            input = input.trim();
-            
+            input = (input || '').trim();
             if (input.startsWith('https://')) {
                 const match = input.match(/github\.com\/([a-zA-Z0-9-]+)/);
                 if (match) return match[1];
@@ -411,12 +410,14 @@
                 throw new Error('Use HTTPS URLs. Format: https://github.com/username');
             } else {
                 if (input.length === 0) throw new Error('Please enter a GitHub username or URL');
-                return input;
+                return input.replace(/^@/, '');
             }
         }
+        window.extractUsername = extractUsername;
+        window.GITHUB_API_BASE = GITHUB_API_BASE;
 
         async function handleAnalysis() {
-            const input = githubInput.value.trim();
+            const input = githubInput ? githubInput.value.trim() : '';
 
             if (!input) {
                 showError('Please enter a GitHub username or profile URL');
@@ -490,6 +491,9 @@
                 languages: analyzeLanguages(repos)
             };
         }
+        window.fetchUserData = fetchUserData;
+        window.fetchRepositories = fetchRepositories;
+        window.analyzePortfolio = analyzePortfolio;
 
         function calculateDocumentationScore(repos) {
             if (repos.length === 0) return 0;
@@ -736,7 +740,7 @@
             const languageStats = {};
 
             repos.forEach(repo => {
-                if (repo.language && !repo.fork) {
+                if (repo.language) {
                     languageStats[repo.language] = (languageStats[repo.language] || 0) + 1;
                 }
             });
@@ -755,6 +759,9 @@
         function displayResults(userData, repos, analysis) {
             hideLoading();
 
+            window.currentData = { userData, repos: Array.isArray(repos) ? repos : [], analysis, username: userData.login };
+            currentData = window.currentData;
+
             document.getElementById('portfolioScore').textContent = analysis.weightedScore;
             document.getElementById('scoreInterpretation').textContent = getScoreInterpretation(analysis.weightedScore);
 
@@ -772,7 +779,7 @@
             document.getElementById('publicGists').textContent = userData.public_gists || '0';
             document.getElementById('accountType').textContent = userData.type === 'User' ? '👤 User Account' : '🏢 Organization';
             
-            document.getElementById('repoCount').textContent = repos.filter(r => !r.fork).length;
+            document.getElementById('repoCount').textContent = (repos || []).length;
             document.getElementById('followerCount').textContent = userData.followers;
             document.getElementById('followingCount').textContent = userData.following;
             document.getElementById('starCount').textContent = repos.reduce((sum, r) => sum + r.stargazers_count, 0);
@@ -972,18 +979,12 @@
         };
 
         function renderRepos(){
-            const cd = window.currentData || currentData;
+            const cd = window.currentData || (typeof currentData !== 'undefined' ? currentData : null);
             if (!cd || !Array.isArray(cd.repos)) return;
 
             const q = (document.getElementById('repoSearch')?.value || '').trim().toLowerCase();
             const sort = document.getElementById('repoSort')?.value || 'stars';
             const showAll = !!document.getElementById('showAllRepos')?.checked;
-
-            // Optional advanced filters if present
-            const langFilter = document.getElementById('filtLang')?.value || '';
-            const minStars = parseInt(document.getElementById('filtMinStars')?.value || '0', 10);
-            const activity = parseInt(document.getElementById('filtActivity')?.value || '0', 10);
-            const showArch = document.getElementById('filtArchived')?.value === 'show';
 
             const rawRepos = cd.repos;
             const totalCount = rawRepos.length;
@@ -998,13 +999,6 @@
                         return false;
                     }
                 }
-                if (langFilter && repo.language !== langFilter) return false;
-                if (minStars > 0 && (repo.stargazers_count || 0) < minStars) return false;
-                if (activity > 0) {
-                    const pushed = new Date(repo.pushed_at || repo.updated_at || 0).getTime();
-                    if (Date.now() - pushed > activity * 86400000) return false;
-                }
-                if (document.getElementById('filtArchived') && !showArch && repo.archived) return false;
                 return true;
             });
 
@@ -1027,29 +1021,32 @@
                 return sDiff !== 0 ? sDiff : (b.forks_count || 0) - (a.forks_count || 0);
             });
 
-            const displayList = showAll ? filtered : filtered.slice(0, 6);
+            // Slicing: if showAll is checked OR search query is present, show matching repos. Otherwise show top 6
+            const displayList = (showAll || q.length > 0) ? filtered : filtered.slice(0, 6);
 
             // Update counter badge
             const countEl = document.getElementById('repoCountSummary');
             if (countEl) {
                 if (totalCount === 0) {
                     countEl.textContent = '0 repositories';
-                } else if (showAll) {
+                } else if (showAll || filtered.length === totalCount) {
                     countEl.textContent = `Showing all ${filtered.length} of ${totalCount} repositories`;
+                } else if (q.length > 0) {
+                    countEl.textContent = `Found ${filtered.length} of ${totalCount} repositories for "${q}"`;
                 } else {
-                    countEl.textContent = `Showing ${Math.min(displayList.length, filtered.length)} of ${totalCount} repositories (check "Show all" to view all)`;
+                    countEl.textContent = `Showing ${Math.min(displayList.length, filtered.length)} of ${totalCount} repositories (check "Show all" to view all ${totalCount})`;
                 }
             }
 
             const reposListEl = document.getElementById('reposList');
             if (!reposListEl) return;
 
-            if (displayList.length === 0) {
+            if (filtered.length === 0) {
                 reposListEl.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 28px; background: rgba(0,0,0,0.02); border-radius: 10px; border: 1px dashed var(--accent-teal);">
                         <div style="font-size: 1.8em; margin-bottom: 8px;">🔍</div>
-                        <strong style="display:block; font-size: 1.05em; margin-bottom: 4px;">No repositories match your filter</strong>
-                        <p style="margin: 0; font-size: 0.9em; color: var(--text-muted, #777);">Try clearing the search query or adjusting the sort/filter options.</p>
+                        <strong style="display:block; font-size: 1.05em; margin-bottom: 4px;">No repositories match "${typeof escapeHtml === 'function' ? escapeHtml(q) : q}"</strong>
+                        <p style="margin: 0; font-size: 0.9em; color: var(--text-muted, #777);">Try clearing the search query or adjusting the sort options.</p>
                     </div>
                 `;
                 return;
@@ -2161,7 +2158,14 @@ Generated: ${new Date().toLocaleString()}`;
     }
 
     function wrapHandleAnalysis(){
-        const origExtract = window.extractUsername;
+        const extractFn = (input) => {
+            if (typeof window.extractUsername === 'function') return window.extractUsername(input);
+            if (typeof extractUsername === 'function') return extractUsername(input);
+            input = (input || '').trim().replace(/^https?:\/\/(www\.)?github\.com\//i, '');
+            if (!input) throw new Error('Please enter a GitHub username or URL');
+            return input.replace(/^@/, '');
+        };
+
         window.handleAnalysis = async function(){
             // ── Prevent concurrent requests ──────────────────────────────
             if (_gpaAnalysisInFlight) {
@@ -2170,11 +2174,25 @@ Generated: ${new Date().toLocaleString()}`;
             }
 
             const input = (document.getElementById('githubInput')?.value || '').trim();
-            if (!input) { showFriendlyError('Please enter a GitHub username or profile URL to begin.'); return; }
+            if (!input) {
+                const msg = 'Please enter a GitHub username or profile URL';
+                if (typeof showError === 'function') showError(msg);
+                else showFriendlyError(msg);
+                return;
+            }
             let username;
-            try { username = origExtract(input); } catch(e){ showFriendlyError(e.message); return; }
+            try {
+                username = extractFn(input);
+            } catch(e){
+                if (typeof showError === 'function') showError(e.message);
+                else showFriendlyError(e.message);
+                return;
+            }
+            username = username.trim().replace(/^@/, '');
             if (!/^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/.test(username)) {
-                showFriendlyError(`"${username}" doesn't look like a valid GitHub username. Usernames are 1–39 characters and may contain letters, numbers, and hyphens.`);
+                const msg = `"${username}" doesn't look like a valid GitHub username. Usernames are 1–39 characters and may contain letters, numbers, and hyphens.`;
+                if (typeof showError === 'function') showError(msg);
+                else showFriendlyError(msg);
                 return;
             }
 
@@ -2189,16 +2207,13 @@ Generated: ${new Date().toLocaleString()}`;
                 try { _gpaAbortController.abort(); } catch(_) {}
             }
             _gpaAbortController = typeof AbortController !== 'undefined' ? new AbortController() : null;
-            const signal = _gpaAbortController?.signal;
 
             if (resultsVisible) {
-                // Re-analysis: show overlay OVER existing results — don't hide them
                 const btn = document.getElementById('analyzeBtn');
                 if (btn) btn.disabled = true;
                 showReanalysisOverlay('Fetching latest data from GitHub');
                 resetStages();
             } else {
-                // First analysis: use normal full-page loading
                 showLoading();
                 resetStages();
             }
@@ -2207,7 +2222,8 @@ Generated: ${new Date().toLocaleString()}`;
                 if (!resultsVisible) setStage('fetch-user','active');
                 else updateReanalysisStage('fetch-user','active');
 
-                const userData = await safeFetch(`${window.GITHUB_API_BASE || 'https://api.github.com'}/users/${username}`);
+                const base = window.GITHUB_API_BASE || 'https://api.github.com';
+                const userData = await safeFetch(`${base}/users/${encodeURIComponent(username)}`);
                 if (!userData || !userData.login) throw new Error('Profile data was incomplete. Try again.');
 
                 if (!resultsVisible) setStage('fetch-user','done');
@@ -2216,7 +2232,7 @@ Generated: ${new Date().toLocaleString()}`;
                 if (!resultsVisible) setStage('fetch-repos','active');
                 else updateReanalysisStage('fetch-repos','active');
 
-                const repos = await safeFetch(`${window.GITHUB_API_BASE || 'https://api.github.com'}/users/${username}/repos?per_page=100&sort=updated`);
+                const repos = await safeFetch(`${base}/users/${encodeURIComponent(username)}/repos?per_page=100&sort=updated`);
 
                 if (!resultsVisible) setStage('fetch-repos','done');
                 else updateReanalysisStage('fetch-repos','done');
@@ -2224,8 +2240,9 @@ Generated: ${new Date().toLocaleString()}`;
                 if (!resultsVisible) setStage('analyze','active');
                 else updateReanalysisStage('analyze','active');
 
-                await new Promise(r => setTimeout(r, 120)); // visual beat
-                const analysis = window.analyzePortfolio(userData, repos || []);
+                await new Promise(r => setTimeout(r, 80)); // brief visual beat
+                const analysisFn = (typeof window.analyzePortfolio === 'function') ? window.analyzePortfolio : (typeof analyzePortfolio === 'function' ? analyzePortfolio : () => ({ weightedScore: 80, scores: {}, strengths: [], improvements: [], recommendations: [], languages: [] }));
+                const analysis = analysisFn(userData, Array.isArray(repos) ? repos : []);
 
                 if (!resultsVisible) setStage('analyze','done');
                 else updateReanalysisStage('analyze','done');
@@ -2233,18 +2250,34 @@ Generated: ${new Date().toLocaleString()}`;
                 if (!resultsVisible) setStage('render','active');
                 else updateReanalysisStage('render','active');
 
-                // Now it's safe to swap the results
                 if (resultsVisible) {
                     hideReanalysisOverlay();
-                    // Small delay to let overlay fade out before updating DOM
-                    await new Promise(r => setTimeout(r, 220));
+                    await new Promise(r => setTimeout(r, 150));
                 }
 
-                window.displayResults(userData, repos || [], analysis);
+                // Persist full currentData globally so ALL repo controls have immediate access
+                window.currentData = {
+                    userData,
+                    repos: Array.isArray(repos) ? repos : [],
+                    analysis,
+                    username: userData.login
+                };
+                currentData = window.currentData;
+
+                const displayFn = (typeof window.displayResults === 'function') ? window.displayResults : (typeof displayResults === 'function' ? displayResults : null);
+                if (displayFn) {
+                    displayFn(userData, Array.isArray(repos) ? repos : [], analysis);
+                }
+
+                // Always immediately trigger renderRepos to show all repositories
+                if (typeof window.renderRepos === 'function') {
+                    window.renderRepos();
+                } else if (typeof renderRepos === 'function') {
+                    renderRepos();
+                }
 
                 if (!resultsVisible) setStage('render','done');
 
-                // Re-enable button (hideLoading handles first-analysis case)
                 const btn = document.getElementById('analyzeBtn');
                 if (btn) btn.disabled = false;
 
@@ -2256,20 +2289,20 @@ Generated: ${new Date().toLocaleString()}`;
                 addAdvancedFilters(repos);
                 addExportButtons();
             } catch (err) {
-                // Always hide overlay and re-enable button on error
                 hideReanalysisOverlay();
                 const btn = document.getElementById('analyzeBtn');
                 if (btn) btn.disabled = false;
 
-                // If re-analysis failed, keep the existing results visible
+                const errMsg = err.message || 'Something went wrong. Please try again.';
                 if (resultsVisible) {
                     const rs = document.getElementById('resultsSection');
                     if (rs) rs.classList.remove('hidden');
                     const ls = document.getElementById('loadingState');
                     if (ls) ls.classList.add('hidden');
-                    window.GHToast?.error('Re-analysis failed — previous results restored. ' + (err.message || ''), 5000);
+                    window.GHToast?.error('Re-analysis failed — previous results restored. ' + errMsg, 5000);
                 } else {
-                    showFriendlyError(err.message || 'Something went wrong. Please try again.');
+                    if (typeof showError === 'function') showError(errMsg);
+                    else showFriendlyError(errMsg);
                 }
             } finally {
                 _gpaAnalysisInFlight = false;
@@ -5102,6 +5135,11 @@ function switchAnalysisTab(tabName, shouldScroll = true) {
         history.replaceState(null, null, '#' + tabName);
     }
 
+    if (tabName === 'repos') {
+        if (typeof bindRepoControls === 'function') bindRepoControls();
+        if (typeof window.renderRepos === 'function') window.renderRepos();
+    }
+
     // Always scroll smoothly to the beginning of the tabs navigation
     if (shouldScroll) {
         requestAnimationFrame(() => {
@@ -5262,6 +5300,43 @@ ${name}`);
 }
 window.shareViaEmail = shareViaEmail;
 
+/* ─── Repo Controls Event Listener Binder ─── */
+function bindRepoControls() {
+    const s = document.getElementById('repoSearch');
+    const o = document.getElementById('repoSort');
+    const a = document.getElementById('showAllRepos');
+
+    if (s && !s._boundRepo) {
+        s._boundRepo = true;
+        s.addEventListener('input', () => {
+            if (typeof window.renderRepos === 'function') window.renderRepos();
+        });
+        s.addEventListener('keyup', () => {
+            if (typeof window.renderRepos === 'function') window.renderRepos();
+        });
+    }
+    if (o && !o._boundRepo) {
+        o._boundRepo = true;
+        o.addEventListener('change', () => {
+            if (typeof window.renderRepos === 'function') window.renderRepos();
+        });
+    }
+    if (a && !a._boundRepo) {
+        a._boundRepo = true;
+        a.addEventListener('change', () => {
+            if (typeof window.renderRepos === 'function') window.renderRepos();
+        });
+        a.addEventListener('click', () => {
+            if (typeof window.renderRepos === 'function') window.renderRepos();
+        });
+    }
+}
+window.bindRepoControls = bindRepoControls;
+bindRepoControls();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindRepoControls);
+}
+
 /* ─── Robust Tab Switching with Instant/Smooth Anchor Reset ─── */
 function switchAnalysisTab(tabName, shouldScroll = true) {
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
@@ -5276,6 +5351,13 @@ function switchAnalysisTab(tabName, shouldScroll = true) {
 
     if (history.replaceState) {
         history.replaceState(null, null, '#' + tabName);
+    }
+
+    if (tabName === 'repos') {
+        bindRepoControls();
+        if (typeof window.renderRepos === 'function') {
+            window.renderRepos();
+        }
     }
 
     if (shouldScroll) {
