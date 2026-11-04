@@ -362,7 +362,23 @@
         const GITHUB_API_BASE = 'https://api.github.com';
         let inputType = 'url';
 
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+        window.escapeHtml = escapeHtml;
+
         const githubInput = document.getElementById('githubInput');
+        if (githubInput) {
+            githubInput.addEventListener('input', () => {
+                if (typeof clearTopError === 'function') clearTopError();
+            });
+        }
         const analyzeBtn = document.getElementById('analyzeBtn');
         const loadingState = document.getElementById('loadingState');
         const errorState = document.getElementById('errorState');
@@ -785,24 +801,9 @@
                 `)
                 .join('');
 
-            const topRepos = repos
-                .filter(r => !r.fork)
-                .sort((a, b) => (b.stargazers_count + b.forks_count) - (a.stargazers_count + a.forks_count))
-                .slice(0, 6);
-
-            document.getElementById('reposList').innerHTML = topRepos
-                .map(repo => `
-                    <div class="repo-item">
-                        <div class="repo-name">${repo.name}</div>
-                        <div class="repo-desc">${repo.description || 'No description'}</div>
-                        <div class="repo-meta">
-                            <span>⭐ ${repo.stargazers_count}</span>
-                            <span>🔀 ${repo.forks_count}</span>
-                            ${repo.language ? `<span class="repo-lang">${repo.language}</span>` : ''}
-                        </div>
-                    </div>
-                `)
-                .join('');
+            if (typeof renderRepos === 'function') {
+                renderRepos();
+            }
 
             document.getElementById('languageChart').innerHTML = analysis.languages
                 .slice(0, 6)
@@ -851,10 +852,50 @@
             errorState.classList.remove('hidden');
             loadingState.classList.add('hidden');
             resultsSection.classList.add('hidden');
+            if (analyzeBtn) analyzeBtn.disabled = false;
+
+            // Instant Top Error display directly at the input box!
+            const topBox = document.getElementById('topErrorBox');
+            const topMsg = document.getElementById('topErrorMessage');
+            const topTitle = document.getElementById('topErrorTitle');
+            if (topBox && topMsg) {
+                topMsg.textContent = message;
+                if (topTitle) {
+                    topTitle.textContent = (message || '').toLowerCase().includes('not found')
+                        ? 'GitHub Profile Not Found'
+                        : 'Invalid GitHub Username or URL';
+                }
+                topBox.style.display = 'flex';
+            }
+
+            if (githubInput) {
+                githubInput.classList.add('input-invalid', 'shake');
+                githubInput.focus();
+                setTimeout(() => githubInput.classList.remove('shake'), 600);
+            }
+
+            if (typeof showToast === 'function') {
+                showToast(message, 'error', 5000);
+            }
+
+            // Ensure viewport stays focused on the input card
+            const inputCard = document.querySelector('.input-card');
+            if (inputCard) {
+                inputCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
+
+        function clearTopError() {
+            const topBox = document.getElementById('topErrorBox');
+            if (topBox) topBox.style.display = 'none';
+            if (githubInput) githubInput.classList.remove('input-invalid', 'shake');
+            if (errorState) errorState.classList.add('hidden');
+        }
+        window.clearTopError = clearTopError;
 
         function resetForm() {
             githubInput.value = '';
+            clearTopError();
             resultsSection.classList.add('hidden');
             errorState.classList.add('hidden');
             loadingState.classList.add('hidden');
@@ -931,36 +972,118 @@
         };
 
         function renderRepos(){
-            if (!currentData) return;
-            const q = (document.getElementById('repoSearch')?.value || '').toLowerCase();
+            const cd = window.currentData || currentData;
+            if (!cd || !Array.isArray(cd.repos)) return;
+
+            const q = (document.getElementById('repoSearch')?.value || '').trim().toLowerCase();
             const sort = document.getElementById('repoSort')?.value || 'stars';
-            const all = document.getElementById('showAllRepos')?.checked;
-            let list = currentData.repos.filter(r => !r.fork);
-            if (q) list = list.filter(r =>
-                r.name.toLowerCase().includes(q) ||
-                (r.description||'').toLowerCase().includes(q) ||
-                (r.language||'').toLowerCase().includes(q)
-            );
-            list.sort((a,b)=>{
-                if (sort==='forks') return b.forks_count - a.forks_count;
-                if (sort==='updated') return new Date(b.updated_at) - new Date(a.updated_at);
-                if (sort==='name') return a.name.localeCompare(b.name);
-                return b.stargazers_count - a.stargazers_count;
+            const showAll = !!document.getElementById('showAllRepos')?.checked;
+
+            // Optional advanced filters if present
+            const langFilter = document.getElementById('filtLang')?.value || '';
+            const minStars = parseInt(document.getElementById('filtMinStars')?.value || '0', 10);
+            const activity = parseInt(document.getElementById('filtActivity')?.value || '0', 10);
+            const showArch = document.getElementById('filtArchived')?.value === 'show';
+
+            const rawRepos = cd.repos;
+            const totalCount = rawRepos.length;
+
+            let filtered = rawRepos.filter(repo => {
+                if (q) {
+                    const name = (repo.name || '').toLowerCase();
+                    const desc = (repo.description || '').toLowerCase();
+                    const lang = (repo.language || '').toLowerCase();
+                    const topics = Array.isArray(repo.topics) ? repo.topics.map(t => String(t).toLowerCase()) : [];
+                    if (!name.includes(q) && !desc.includes(q) && !lang.includes(q) && !topics.some(t => t.includes(q))) {
+                        return false;
+                    }
+                }
+                if (langFilter && repo.language !== langFilter) return false;
+                if (minStars > 0 && (repo.stargazers_count || 0) < minStars) return false;
+                if (activity > 0) {
+                    const pushed = new Date(repo.pushed_at || repo.updated_at || 0).getTime();
+                    if (Date.now() - pushed > activity * 86400000) return false;
+                }
+                if (document.getElementById('filtArchived') && !showArch && repo.archived) return false;
+                return true;
             });
-            if (!all) list = list.slice(0, 6);
-            document.getElementById('reposList').innerHTML = list.map(repo => `
-                <div class="repo-item">
-                    <div class="repo-name"><a href="${repo.html_url}" target="_blank" style="color:inherit;text-decoration:none;">${repo.name}</a></div>
-                    <div class="repo-desc">${repo.description || 'No description'}</div>
-                    <div class="repo-meta">
-                        <span>⭐ ${repo.stargazers_count}</span>
-                        <span>🔀 ${repo.forks_count}</span>
-                        <span>📅 ${new Date(repo.updated_at).toLocaleDateString()}</span>
-                        ${repo.language ? `<span class="repo-lang">${repo.language}</span>` : ''}
+
+            // Sorting
+            filtered.sort((a, b) => {
+                if (sort === 'forks') {
+                    const diff = (b.forks_count || 0) - (a.forks_count || 0);
+                    return diff !== 0 ? diff : (b.stargazers_count || 0) - (a.stargazers_count || 0);
+                }
+                if (sort === 'updated') {
+                    const tA = new Date(a.pushed_at || a.updated_at || 0).getTime();
+                    const tB = new Date(b.pushed_at || b.updated_at || 0).getTime();
+                    return tB - tA;
+                }
+                if (sort === 'name') {
+                    return (a.name || '').localeCompare(b.name || '');
+                }
+                // Default: stars
+                const sDiff = (b.stargazers_count || 0) - (a.stargazers_count || 0);
+                return sDiff !== 0 ? sDiff : (b.forks_count || 0) - (a.forks_count || 0);
+            });
+
+            const displayList = showAll ? filtered : filtered.slice(0, 6);
+
+            // Update counter badge
+            const countEl = document.getElementById('repoCountSummary');
+            if (countEl) {
+                if (totalCount === 0) {
+                    countEl.textContent = '0 repositories';
+                } else if (showAll) {
+                    countEl.textContent = `Showing all ${filtered.length} of ${totalCount} repositories`;
+                } else {
+                    countEl.textContent = `Showing ${Math.min(displayList.length, filtered.length)} of ${totalCount} repositories (check "Show all" to view all)`;
+                }
+            }
+
+            const reposListEl = document.getElementById('reposList');
+            if (!reposListEl) return;
+
+            if (displayList.length === 0) {
+                reposListEl.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 28px; background: rgba(0,0,0,0.02); border-radius: 10px; border: 1px dashed var(--accent-teal);">
+                        <div style="font-size: 1.8em; margin-bottom: 8px;">🔍</div>
+                        <strong style="display:block; font-size: 1.05em; margin-bottom: 4px;">No repositories match your filter</strong>
+                        <p style="margin: 0; font-size: 0.9em; color: var(--text-muted, #777);">Try clearing the search query or adjusting the sort/filter options.</p>
                     </div>
-                </div>
-            `).join('') || '<p style="color:#999;">No repositories match your filter.</p>';
+                `;
+                return;
+            }
+
+            const username = cd.username || (cd.userData && cd.userData.login) || '';
+            reposListEl.innerHTML = displayList.map(repo => {
+                const forkTag = repo.fork ? `<span class="repo-tag-fork" title="Forked from another repository">⑂ Fork</span>` : '';
+                const archTag = repo.archived ? `<span class="repo-tag-fork" style="background:rgba(120,120,120,0.15);color:#888;border-color:rgba(120,120,120,0.3);">Archived</span>` : '';
+                const langTag = repo.language ? `<span class="repo-lang">${typeof escapeHtml === 'function' ? escapeHtml(repo.language) : repo.language}</span>` : '';
+                const updateDate = repo.pushed_at || repo.updated_at ? new Date(repo.pushed_at || repo.updated_at).toLocaleDateString() : 'N/A';
+                const safeName = typeof escapeHtml === 'function' ? escapeHtml(repo.name) : repo.name;
+                const safeDesc = repo.description ? (typeof escapeHtml === 'function' ? escapeHtml(repo.description) : repo.description) : '<em style="color:#999;">No description provided</em>';
+
+                return `
+                    <div class="repo-item" data-repo-name="${safeName}" data-username="${username}">
+                        <div class="repo-name">
+                            <a href="${repo.html_url}" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;">${safeName}</a>
+                            ${forkTag}
+                            ${archTag}
+                        </div>
+                        <div class="repo-desc">${safeDesc}</div>
+                        <div class="repo-meta">
+                            <span title="Stars">⭐ ${repo.stargazers_count ?? 0}</span>
+                            <span title="Forks">🔀 ${repo.forks_count ?? 0}</span>
+                            <span title="Last updated">📅 ${updateDate}</span>
+                            ${langTag}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
+        window.renderRepos = renderRepos;
+        window.renderRepos.__dd = true;
 
         function renderLangBar(langs){
             const colors = ['#0d7377','#14919b','#76c7d1','#ffc107','#dc3545','#6f42c1','#28a745','#fd7e14'];
@@ -1720,15 +1843,17 @@ Generated: ${new Date().toLocaleString()}`;
             document.head.appendChild(s);
         }
 
-        // Debounce search
-        (function patchRepoSearch() {
-            const orig = window.renderRepos;
-            let timer;
-            window.renderRepos = function() {
-                clearTimeout(timer);
-                timer = setTimeout(orig, 200);
-            };
-        })();
+        // Debounce search on repoSearch input cleanly without clobbering window.renderRepos
+        const repoSearchEl = document.getElementById('repoSearch');
+        if (repoSearchEl) {
+            let rSearchTimer;
+            repoSearchEl.addEventListener('input', () => {
+                clearTimeout(rSearchTimer);
+                rSearchTimer = setTimeout(() => {
+                    if (typeof window.renderRepos === 'function') window.renderRepos();
+                }, 150);
+            });
+        }
 
         // API rate limit handling
         const _origFetch = window.fetch;
@@ -2305,7 +2430,7 @@ Generated: ${new Date().toLocaleString()}`;
         const host = document.getElementById('reposList');
         if (!host) return;
         if (document.getElementById('advFilters')) return;
-        const real = (repos||[]).filter(r=>!r.fork);
+        const real = repos || [];
         const langs = [...new Set(real.map(r => r.language).filter(Boolean))].sort();
         const div = document.createElement('div');
         div.className = 'adv-filters';
@@ -2333,52 +2458,28 @@ Generated: ${new Date().toLocaleString()}`;
         `;
         host.parentNode.insertBefore(div, host);
         ['filtLang','filtMinStars','filtActivity','filtArchived'].forEach(id => {
-            document.getElementById(id).addEventListener('input', applyAdvFilters);
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', applyAdvFilters);
+                el.addEventListener('change', applyAdvFilters);
+            }
         });
     }
     function applyAdvFilters(){
-        const cd = window.currentData;
-        if (!cd) return;
-        const lang = document.getElementById('filtLang')?.value || '';
-        const minStars = parseInt(document.getElementById('filtMinStars')?.value || '0', 10);
-        const activity = parseInt(document.getElementById('filtActivity')?.value || '0', 10);
-        const showArch = (document.getElementById('filtArchived')?.value === 'show');
-        const q = (document.getElementById('repoSearch')?.value || '').toLowerCase();
-        const sort = document.getElementById('repoSort')?.value || 'stars';
-        const showAll = document.getElementById('showAllRepos')?.checked;
-        const now = Date.now();
-        let list = cd.repos.filter(r => !r.fork)
-            .filter(r => !lang || r.language === lang)
-            .filter(r => r.stargazers_count >= minStars)
-            .filter(r => !activity || (now - new Date(r.pushed_at).getTime()) <= activity*86400000)
-            .filter(r => showArch || !r.archived);
-        if (q) list = list.filter(r =>
-            r.name.toLowerCase().includes(q) ||
-            (r.description||'').toLowerCase().includes(q) ||
-            (r.language||'').toLowerCase().includes(q));
-        list.sort((a,b)=>{
-            if (sort==='forks') return b.forks_count - a.forks_count;
-            if (sort==='updated') return new Date(b.updated_at) - new Date(a.updated_at);
-            if (sort==='name') return a.name.localeCompare(b.name);
-            return b.stargazers_count - a.stargazers_count;
-        });
-        if (!showAll) list = list.slice(0, 6);
-        document.getElementById('reposList').innerHTML = list.length ? list.map(repo => `
-            <div class="repo-item">
-                <div class="repo-name"><a href="${repo.html_url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">${repo.name}</a>${repo.archived?' <span style="font-size:.7em;color:#888;">[archived]</span>':''}</div>
-                <div class="repo-desc">${repo.description || '<em style="color:#999;">No description</em>'}</div>
-                <div class="repo-meta">
-                    <span>⭐ ${repo.stargazers_count}</span>
-                    <span>🔀 ${repo.forks_count}</span>
-                    <span>📅 ${new Date(repo.updated_at).toLocaleDateString()}</span>
-                    ${repo.language ? `<span class="repo-lang">${repo.language}</span>` : ''}
-                </div>
-            </div>
-        `).join('') : '<div class="empty-state"><strong>No repositories match these filters</strong>Try widening the filters above.</div>';
+        if (typeof window.renderRepos === 'function') {
+            window.renderRepos();
+        }
     }
     // Re-route any extra filter changes to advanced renderer
     document.addEventListener('input', e => {
-        if (['repoSearch','repoSort','showAllRepos'].includes(e.target.id)) applyAdvFilters();
+        if (['repoSearch','repoSort','showAllRepos','filtLang','filtMinStars','filtActivity','filtArchived'].includes(e.target.id)) {
+            applyAdvFilters();
+        }
+    });
+    document.addEventListener('change', e => {
+        if (['repoSearch','repoSort','showAllRepos','filtLang','filtMinStars','filtActivity','filtArchived'].includes(e.target.id)) {
+            applyAdvFilters();
+        }
     });
 
     /* ---------- 12. Export: PDF (via print) + History controls ---------- */
@@ -5324,9 +5425,29 @@ window.setupResumeDropzone = setupResumeDropzone;
 
 async function handleResumeFile(file) {
     if (!file) return;
+
+    const errorBox = document.getElementById('resumeErrorBox');
+    if (errorBox) {
+        errorBox.innerHTML = '';
+        errorBox.style.display = 'none';
+    }
+
     if (!file.name.toLowerCase().endsWith('.pdf')) {
-        if (window.GHToast) window.GHToast.error('Please upload a PDF format resume.');
-        else alert('Please upload a PDF format resume.');
+        const msg = 'Please upload a PDF format resume (.pdf).';
+        if (errorBox) {
+            errorBox.innerHTML = `
+                <div class="resume-error-box" role="alert">
+                    <span style="font-size:1.6em;line-height:1;">⚠️</span>
+                    <div>
+                        <strong style="display:block;margin-bottom:4px;font-size:1.02em;">Invalid File Type</strong>
+                        <p style="margin:0;font-size:0.92em;line-height:1.4;">${msg}</p>
+                    </div>
+                </div>
+            `;
+            errorBox.style.display = 'block';
+        }
+        if (typeof showToast === 'function') showToast(msg, 'error', 4500);
+        else if (window.GHToast) window.GHToast.error(msg);
         return;
     }
 
@@ -5361,10 +5482,29 @@ async function handleResumeFile(file) {
         }
 
         const data = await res.json();
+        if (errorBox) errorBox.style.display = 'none';
         renderResumeResults(data);
     } catch (err) {
-        if (window.GHToast) window.GHToast.error(err.message || 'Error parsing resume');
-        else alert(err.message || 'Error parsing resume');
+        const errorMsg = err.message || 'Error parsing resume';
+        if (errorBox) {
+            errorBox.innerHTML = `
+                <div class="resume-error-box" role="alert">
+                    <span style="font-size:1.6em;line-height:1;">⚠️</span>
+                    <div>
+                        <strong style="display:block;margin-bottom:4px;font-size:1.02em;">Document Validation Notice</strong>
+                        <p style="margin:0;font-size:0.92em;line-height:1.4;">${typeof escapeHtml === 'function' ? escapeHtml(errorMsg) : errorMsg}</p>
+                    </div>
+                </div>
+            `;
+            errorBox.style.display = 'block';
+        }
+        if (typeof showToast === 'function') {
+            showToast('⚠️ ' + errorMsg, 'error', 6000);
+        } else if (window.GHToast) {
+            window.GHToast.error(errorMsg);
+        } else {
+            alert(errorMsg);
+        }
     } finally {
         if (loader) loader.style.display = 'none';
     }

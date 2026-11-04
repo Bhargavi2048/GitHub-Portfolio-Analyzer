@@ -12,7 +12,7 @@ const upload = multer({
 });
 exports.upload = upload.single("resume");
 
-// Curated skill keywords. Extend as needed.
+// Curated skill keywords for ATS matching
 const SKILL_DICT = [
   "javascript","typescript","react","node","node.js","express","next.js","vue","angular","svelte",
   "python","django","flask","fastapi","java","spring","kotlin","go","golang","rust","c++","c#",".net",
@@ -36,6 +36,51 @@ function extractSkills(text) {
   return [...found];
 }
 
+/**
+ * Strict Resume/CV Validation
+ * Validates that the uploaded PDF is genuinely a professional resume/CV
+ * and rejects invoices, homework assignments, code snippets, receipts, or non-resume documents.
+ */
+function validateIsResume(text) {
+  const clean = text.toLowerCase();
+  const words = text.split(/\s+/).filter(Boolean);
+  const wordCount = words.length;
+
+  if (wordCount < 40) {
+    return {
+      isValid: false,
+      error: "The uploaded PDF has too little extractable text (" + wordCount + " words). Please upload a complete resume with readable text (not a scanned image without selectable text).",
+    };
+  }
+
+  // Resume section indicators
+  const indicators = [
+    { name: "experience", regex: /\b(experience|work history|employment|employment history|work experience|professional experience|internship|job experience|responsibilities)\b/i },
+    { name: "education", regex: /\b(education|academic|university|college|bachelor|master|b\.?tech|m\.?tech|b\.?e|m\.?s|b\.?s|degree|diploma|cgpa|gpa|high school|coursework)\b/i },
+    { name: "skills", regex: /\b(skills|technical skills|technologies|proficiencies|competencies|programming languages|tech stack|tools & technologies)\b/i },
+    { name: "projects", regex: /\b(projects|key projects|academic projects|personal projects|portfolio|open source|achievements)\b/i },
+    { name: "contact", regex: /\b([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}|\+?\d[\d\s().-]{8,}|\blinkedin\.com\b|\bgithub\.com\b)\b/i },
+    { name: "summary", regex: /\b(summary|professional summary|executive summary|career objective|about me|profile|curriculum vitae|resume)\b/i },
+  ];
+
+  let matchedCategories = 0;
+  for (const ind of indicators) {
+    if (ind.regex.test(clean)) {
+      matchedCategories++;
+    }
+  }
+
+  // A genuine resume/CV must match at least 2 distinct resume sections or indicators
+  if (matchedCategories < 2) {
+    return {
+      isValid: false,
+      error: "The uploaded document does not appear to be a resume or CV. The ATS matcher only accepts resumes containing standard sections such as Experience, Education, Skills, and Projects.",
+    };
+  }
+
+  return { isValid: true };
+}
+
 function atsScore(text, skills) {
   let score = 0;
   const issues = [];
@@ -56,10 +101,7 @@ function atsScore(text, skills) {
   if (/(github\.com|linkedin\.com)/i.test(text)) score += 10; else suggestions.push("Add GitHub and LinkedIn URLs");
   if (/\b(\d{1,2}\s*(years?|yrs?))\b/i.test(text)) score += 5;
   if (skills.length >= 8) score += 15; else suggestions.push("List at least 8 concrete technical skills");
-  if (/[•▪●◦]/.test(text) || /^\s*[-*]\s/m.test(text)) score += 5; else suggestions.push("Use bullet points for impact statements");
-
-  // Penalize obvious image-only / unparsable resumes
-  if (wc < 50) { score = Math.min(score, 25); issues.push("Resume text not extractable — may be an image-only PDF"); }
+  if (/[•·▪▸]/.test(text) || /^\s*[-*]\s/m.test(text)) score += 5; else suggestions.push("Use bullet points for impact statements");
 
   return { score: Math.max(0, Math.min(100, score)), issues, suggestions };
 }
@@ -81,6 +123,12 @@ exports.analyzeResume = async (req, res, next) => {
     const pdfParse = require("pdf-parse");
     const parsed = await pdfParse(req.file.buffer).catch((e) => ({ text: "", error: e.message }));
     const text = (parsed.text || "").trim();
+
+    // Strict validation: Reject non-resume documents
+    const resumeCheck = validateIsResume(text);
+    if (!resumeCheck.isValid) {
+      return res.status(400).json({ error: resumeCheck.error, isNotResume: true });
+    }
 
     const skills = extractSkills(text);
     const ats = atsScore(text, skills);

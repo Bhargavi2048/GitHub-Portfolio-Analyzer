@@ -3719,3 +3719,156 @@ body.dark .suggested-project-card {
     background: #161b22;
     border-color: #388bfd;
 }
+
+/* ─── Instant Top Error Banner ─── */
+.top-error-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fef2f2;
+    border: 1.5px solid #ef4444;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.15);
+    animation: slideDownFade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+body.dark .top-error-banner {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: #f87171;
+}
+@keyframes slideDownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.top-error-icon {
+    font-size: 1.5em;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.top-error-text {
+    flex: 1;
+    min-width: 0;
+}
+.top-error-text strong {
+    display: block;
+    color: #b91c1c;
+    font-size: 0.95em;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+body.dark .top-error-text strong {
+    color: #fca5a5;
+}
+.top-error-text p {
+    margin: 0;
+    font-size: 0.88em;
+    color: #7f1d1d;
+    line-height: 1.35;
+}
+body.dark .top-error-text p {
+    color: #fecaca;
+}
+.top-error-dismiss {
+    background: transparent;
+    border: none;
+    color: #991b1b;
+    font-size: 1.1em;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.2s, background 0.2s;
+}
+body.dark .top-error-dismiss {
+    color: #fca5a5;
+}
+.top-error-dismiss:hover {
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.15);
+}
+
+/* ─── Input Error Highlight & Shake ─── */
+.input-invalid {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+}
+@keyframes inputShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+.shake {
+    animation: inputShake 0.4s ease-in-out;
+}
+
+/* ─── Repository Fork Badge & Count Summary ─── */
+.repo-tag-fork {
+    display: inline-block;
+    font-size: 0.72em;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 12px;
+    background: rgba(147, 51, 234, 0.12);
+    color: #9333ea;
+    border: 1px solid rgba(147, 51, 234, 0.3);
+    vertical-align: middle;
+    margin-left: 6px;
+}
+body.dark .repo-tag-fork {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+    border-color: rgba(168, 85, 247, 0.4);
+}
+.repo-count-badge {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--primary-teal, #0d7377);
+    background: rgba(13, 115, 119, 0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(13, 115, 119, 0.2);
+}
+body.dark .repo-count-badge {
+    color: #58a6ff;
+    background: rgba(56, 139, 253, 0.12);
+    border-color: rgba(56, 139, 253, 0.3);
+}
+
+/* ─── Resume Rejection Banner ─── */
+.resume-error-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fef2f2;
+    border: 1.5px solid #ef4444;
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.1);
+    animation: slideDownFade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+body.dark .resume-error-box {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: #f87171;
+}
+.resume-error-box strong {
+    color: #b91c1c;
+}
+body.dark .resume-error-box strong {
+    color: #fca5a5;
+}
+.resume-error-box p {
+    color: #7f1d1d;
+}
+body.dark .resume-error-box p {
+    color: #fecaca;
+}
+

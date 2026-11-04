@@ -14,7 +14,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 
-    <link rel="stylesheet" href="style.css?v=2.6.0">
+    <link rel="stylesheet" href="style.css?v=2.7.0">
 </head>
 <body>
 
@@ -67,6 +67,15 @@
                             <div id="userSuggestions" class="user-suggestions-dropdown" role="listbox"></div>
                         </div>
                         <button id="analyzeBtn" class="btn-analyze" onclick="handleAnalysis()">Analyze Profile</button>
+                    </div>
+                    <!-- Instant Top Error Banner: Always visible right at the input without scrolling -->
+                    <div id="topErrorBox" class="top-error-banner" style="display:none;" role="alert">
+                        <span class="top-error-icon">⚠️</span>
+                        <div class="top-error-text">
+                            <strong id="topErrorTitle">Profile Not Found</strong>
+                            <p id="topErrorMessage">Please check the username or URL and try again.</p>
+                        </div>
+                        <button type="button" class="top-error-dismiss" onclick="clearTopError()" title="Dismiss">✕</button>
                     </div>
                     <p class="info-text">📈 Analyzes: Repositories • Documentation • Commit History • Code Quality • Impact & More</p>
                 </div>
@@ -354,8 +363,9 @@
 
                 <div id="tab-repos" class="tab-pane">
                     <div class="feedback-card repositories">
-                    <div class="feedback-header">
-                        <h3>📚 Top Repositories</h3>
+                    <div class="feedback-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                        <h3>📚 Repositories</h3>
+                        <span id="repoCountSummary" class="repo-count-badge"></span>
                     </div>
                     
                     <div class="repo-controls">
@@ -643,6 +653,9 @@
                             <p style="color:var(--primary-teal);font-weight:600;">Parsing resume and cross-referencing GitHub repositories…</p>
                         </div>
 
+                        <!-- Instant Resume Rejection / ATS Feedback Alert -->
+                        <div id="resumeErrorBox" style="display:none;margin-top:16px;"></div>
+
                         <div id="resumeResultBox" style="display:none;margin-top:20px;"></div>
                     </div>
 
@@ -908,7 +921,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=2.6.0"></script>
+    <script src="app.js?v=2.7.0"></script>
     <script src="enterprise-features.js"></script>
     <div id="toast-container" class="toast-container"></div>
 </body>

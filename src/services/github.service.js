@@ -48,7 +48,7 @@ async function fetchProfile(username) {
 }
 async function fetchRepos(username) {
   const repos = await gh(`/users/${encodeURIComponent(username)}/repos?per_page=100&sort=updated`);
-  return repos.filter((r) => !r.fork && !r.archived);
+  return Array.isArray(repos) ? repos : [];
 }
 async function fetchEvents(username) {
   try {
