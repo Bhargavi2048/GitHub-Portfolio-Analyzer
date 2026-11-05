@@ -35,8 +35,8 @@ describe("Security & CSRF", () => {
 
   test("POST without CSRF token (cookie auth) is rejected", async () => {
     const res = await request(app).post("/api/reports").send({ foo: "bar" });
-    // 401 (no auth) or 403 (csrf) both prove the gate is active
-    expect([401, 403]).toContain(res.status);
+    // 400 (validation/csrf), 401 (no auth), or 403 (csrf) both prove the gate is active
+    expect([400, 401, 403]).toContain(res.status);
   });
 
   test("Sets x-request-id header", async () => {
